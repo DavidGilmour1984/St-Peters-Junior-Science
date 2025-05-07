@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DNA Diagram Quiz</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      background: #f4f4f4;
+      text-align: center;
+      padding: 2em;
+    }
+
+    .quiz-card {
+      background: #fff;
+      padding: 2em;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 800px;
+      margin: auto;
+      position: relative;
+    }
+
+    .diagram-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .pointer {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-bottom: 20px solid red;
+      animation: bounce 1s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    #timer-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin: 20px auto;
+    }
+
+    #timer {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #333;
+    }
+
+    #restart-btn,
+    .instructions-button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background-color: #28a745;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    #restart-btn:hover,
+    .instructions-button:hover {
+      background-color: #218838;
+    }
+
+    .choices {
+      margin-top: 20px;
+    }
+
+    .choices button {
+      margin: 0.5em;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    .choices button:hover {
+      background-color: #0056b3;
+    }
+
+    #feedback {
+      margin-top: 1em;
+      font-weight: bold;
+    }
+
+    .instructions-text {
+      display: none;
+      margin-top: 20px;
+      font-size: 1rem;
+      color: #333;
+      background: #e8f0ff;
+      padding: 1em;
+      border-radius: 10px;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-card">
+    <h2>Circuit Component Symbol Quiz</h2>
+
+    <div class="diagram-container">
+      <img id="diagram" src="Y10_Electricity_Symbols.png" alt="Component Diagram" width="600" />
+      <div id="pointer" class="pointer" style="top: 200px; left: 150px;"></div>
+    </div>
+
+    <div id="timer-container">
+      <div id="timer">Time: 0.00s</div>
+      <button id="restart-btn" onclick="restartQuiz()">Restart</button>
+      <button class="instructions-button" onclick="toggleInstructions()">Instructions</button>
+    </div>
+
+    <div class="instructions-text" id="instructions">
+      1. A red pointer will appear on the diagram.<br>
+      2. Click the correct label for the structure the pointer is indicating.<br>
+      3. If correct, you’ll move to the next question.<br>
+      4. If incorrect, try again until correct.<br>
+      5. The timer starts when you select your first answer.<br>
+      6. Click "Restart" to reset the quiz and timer.
+    </div>
+
+    <div class="choices" id="choices"></div>
+    <div id="feedback"></div>
+  </div>
+
+  <script>
+    function toggleInstructions() {
+      const instructions = document.getElementById("instructions");
+      instructions.style.display = instructions.style.display === "block" ? "none" : "block";
+    }
+
+    function shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    }
+
+    const questions = [
+      { label: "Open Switch", pointer: { top: 66, left: 87 }, choices: ["Open Switch", "Closed Switch", "Fuse", "Battery"] },
+      { label: "Closed Switch", pointer: { top: 69, left: 289 }, choices: ["Motor", "Cell", "Resistor", "Closed Switch"] },
+      { label: "Cell", pointer: { top: 391, left: 485 }, choices: ["Battery", "Fuse", "Cell", "Ammeter"] },
+      { label: "Battery", pointer: { top: 382, left: 87 }, choices: ["Battery", "Cell", "Motor", "Resistor"] },
+      { label: "Resistor", pointer: { top: 76, left: 484 }, choices: ["Variable Resistor", "Motor", "Resistor", "Fuse"] },
+      { label: "Motor", pointer: { top: 291, left: 291 }, choices: ["Motor", "Resistor", "Ammeter", "Open Switch"] },
+      { label: "Fuse", pointer: { top: 270, left: 487 }, choices: ["Closed Switch", "Fuse", "Battery", "Voltmeter"] },
+      { label: "Variable Resistor", pointer: { top: 271, left: 87 }, choices: ["Resistor", "Variable Resistor", "Fuse", "Cell"] },
+      { label: "Ammeter", pointer: { top: 181, left: 283 }, choices: ["Ammeter", "Voltmeter", "Motor", "Battery"] },
+      { label: "Voltmeter", pointer: { top: 181, left: 83 }, choices: ["Cell", "Voltmeter", "Resistor", "Motor"] },
+      { label: "Lamp", pointer: { top: 181, left: 488 }, choices: ["Lamp", "Wire", "Battery", "Cell"] },
+    ];
+
+    shuffleArray(questions);
+
+    let current = 0;
+    let seconds = 0;
+    let timerStarted = false;
+    let timerInterval;
+    let isLocked = false;
+
+    const pointer = document.getElementById("pointer");
+    const choicesDiv = document.getElementById("choices");
+    const feedback = document.getElementById("feedback");
+    const timerDiv = document.getElementById("timer");
+
+    function loadQuestion() {
+      const q = questions[current];
+      pointer.style.top = q.pointer.top + "px";
+      pointer.style.left = q.pointer.left + "px";
+
+      choicesDiv.innerHTML = "";
+      const shuffledChoices = [...q.choices];
+      shuffleArray(shuffledChoices);
+
+      shuffledChoices.forEach(choice => {
+        const btn = document.createElement("button");
+        btn.textContent = choice;
+        btn.onclick = () => {
+          if (isLocked) return;
+
+          if (!timerStarted) {
+            timerStarted = true;
+            timerInterval = setInterval(() => {
+              seconds += 0.01;
+              timerDiv.textContent = `Time: ${seconds.toFixed(2)}s`;
+            }, 10);
+          }
+
+          if (choice === q.label) {
+            feedback.textContent = "Correct!";
+            feedback.style.color = "green";
+            setTimeout(() => {
+              current++;
+              if (current < questions.length) {
+                loadQuestion();
+                feedback.textContent = "";
+              } else {
+                clearInterval(timerInterval);
+                feedback.textContent = `Well done! Quiz complete in ${seconds.toFixed(2)} seconds.`;
+              }
+            }, 100);
+          } else {
+            feedback.textContent = "Try again!";
+            feedback.style.color = "red";
+            isLocked = true;
+            const allButtons = document.querySelectorAll(".choices button");
+            allButtons.forEach(b => b.disabled = true);
+            setTimeout(() => {
+              isLocked = false;
+              allButtons.forEach(b => b.disabled = false);
+            }, 2000);
+          }
+        };
+        choicesDiv.appendChild(btn);
+      });
+    }
+
+    function restartQuiz() {
+      current = 0;
+      seconds = 0;
+      clearInterval(timerInterval);
+      timerStarted = false;
+      timerDiv.textContent = "Time: 0.00s";
+      feedback.textContent = "";
+      shuffleArray(questions);
+      loadQuestion();
+    }
+
+    loadQuestion();
+  </script>
+</body>
+</html>
