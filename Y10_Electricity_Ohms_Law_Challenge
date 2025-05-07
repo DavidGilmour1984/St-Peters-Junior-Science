@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Series Circuit Generator</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      padding: 2em;
+      background-color: #f5f5f5;
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    canvas {
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      margin-top: 1em;
+      margin-bottom: 1em;
+      border-radius: 8px;
+    }
+
+    .question {
+      font-size: 1.2em;
+      margin: 1em 0;
+    }
+
+    input[type="number"] {
+      font-size: 1em;
+      padding: 0.5em;
+      width: 200px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    button {
+      margin-top: 1em;
+      padding: 0.8em 1.6em;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #feedback {
+      margin-top: 1em;
+      font-weight: bold;
+    }
+
+    .incorrect {
+      color: red;
+    }
+
+    .correct {
+      color: green;
+    }
+
+    #tally {
+      margin-top: 1em;
+      font-size: 1.1em;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Ohms Law Quiz</h2>
+    <canvas id="circuitCanvas" width="500" height="250"></canvas>
+    <div class="question" id="questionText"></div>
+    <input type="number" id="answerInput" placeholder="Enter your answer">
+    <button onclick="checkAnswer()">Check Answer</button>
+    <div id="feedback"></div>
+    <div id="tally">Correct Answers: 0 / 0</div>
+  </div>
+
+<script>
+  const canvas = document.getElementById("circuitCanvas");
+  const ctx = canvas.getContext("2d");
+  const questionText = document.getElementById("questionText");
+  const answerInput = document.getElementById("answerInput");
+  const feedback = document.getElementById("feedback");
+  const tallyDisplay = document.getElementById("tally");
+
+  let correctAnswer = 0;
+  let userAnswerBeforeRefresh = "";
+  let tallyCorrect = 0;
+  let tallyTotal = 0;
+
+  function drawBulb(x, y) {
+    ctx.beginPath();
+    ctx.arc(x, y, 20, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x - 15, y - 15);
+    ctx.lineTo(x + 15, y + 15);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x + 15, y - 15);
+    ctx.lineTo(x - 15, y + 15);
+    ctx.stroke();
+  }
+
+  function drawBattery(x, y) {
+    ctx.beginPath();
+    ctx.moveTo(x, y - 20);
+    ctx.lineTo(x, y + 20);
+    ctx.moveTo(x + 10, y - 10);
+    ctx.lineTo(x + 10, y + 10);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(x + 30, y - 20);
+    ctx.lineTo(x + 30, y + 20);
+    ctx.moveTo(x + 40, y - 10);
+    ctx.lineTo(x + 40, y + 10);
+    ctx.stroke();
+  }
+
+  function generateSeriesCircuit() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let numBulbs = Math.floor(Math.random() * 5) + 1;
+    let bulbStartY = canvas.height - 80;
+    let bulbSpacing = 70;
+    let firstBulbX = (canvas.width - (numBulbs - 1) * bulbSpacing) / 2;
+
+    let resistanceValues = [];
+    let totalResistance = 0;
+
+    for (let i = 0; i < numBulbs; i++) {
+      let r = Math.floor(Math.random() * 10) + 1;
+      resistanceValues.push(r);
+      totalResistance += r;
+    }
+
+    let voltage = Math.floor(Math.random() * 13) + 12;
+    let current = (voltage / totalResistance).toFixed(1);
+
+    const questionTypes = ["current", "voltage", "resistance"];
+    const chosenType = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+    let hiddenResistorIndex = Math.floor(Math.random() * resistanceValues.length);
+
+    let batteryX = canvas.width / 2 - 10;
+    let batteryY = 80;
+    drawBattery(batteryX, batteryY);
+
+    ctx.font = "16px Helvetica";
+    let currentBulbX = firstBulbX;
+    for (let i = 0; i < numBulbs; i++) {
+      drawBulb(currentBulbX, bulbStartY);
+      if (i > 0) {
+        ctx.beginPath();
+        ctx.moveTo(currentBulbX - bulbSpacing + 20, bulbStartY);
+        ctx.lineTo(currentBulbX - 20, bulbStartY);
+        ctx.stroke();
+      }
+
+      let label = `${resistanceValues[i]}Ω`;
+      if (chosenType === "resistance" && i === hiddenResistorIndex) {
+        label = "?Ω";
+        correctAnswer = resistanceValues[i];
+      }
+
+      ctx.fillText(label, currentBulbX - 15, bulbStartY + 35);
+      currentBulbX += bulbSpacing;
+    }
+
+    ctx.beginPath();
+    ctx.moveTo(batteryX, batteryY);
+    ctx.lineTo(firstBulbX - 80, batteryY);
+    ctx.lineTo(firstBulbX - 80, bulbStartY);
+    ctx.lineTo(firstBulbX - 20, bulbStartY);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(currentBulbX - 50, bulbStartY);
+    ctx.lineTo(currentBulbX + 5, bulbStartY);
+    ctx.lineTo(currentBulbX + 5, batteryY);
+    ctx.lineTo(batteryX, batteryY);
+    ctx.stroke();
+
+    let voltageLabel = (chosenType === "voltage") ? "?V" : `${voltage.toFixed(1)}V`;
+    let currentLabel = (chosenType === "current") ? "?A" : `${current}A`;
+
+    if (chosenType === "voltage") {
+      correctAnswer = (current * totalResistance).toFixed(1);
+    } else if (chosenType === "current") {
+      correctAnswer = current;
+    }
+
+    ctx.fillText(`Voltage: ${voltageLabel}`, batteryX - 10, batteryY - 30);
+    ctx.fillText(`Current: ${currentLabel}`, batteryX - 10, batteryY - 50);
+
+    if (chosenType === "current") {
+      questionText.innerHTML = `What is the current (in A) in the circuit?`;
+    } else if (chosenType === "voltage") {
+      questionText.innerHTML = `What is the voltage (in V) of the battery?`;
+    } else if (chosenType === "resistance") {
+      questionText.innerHTML = `What is the resistance (in Ω) of the bulb marked "?Ω"?`;
+    }
+
+    answerInput.placeholder = `Answer to 1dp`;
+    feedback.innerHTML = '';
+    answerInput.value = userAnswerBeforeRefresh;
+  }
+
+  function checkAnswer() {
+    const userAnswer = (Math.round(parseFloat(answerInput.value) * 10) / 10).toFixed(1);
+    const roundedCorrectAnswer = (Math.round(correctAnswer * 10) / 10).toFixed(1);
+    const userAnswerNum = parseFloat(userAnswer);
+    const correctAnswerNum = parseFloat(roundedCorrectAnswer);
+
+    tallyTotal++;
+
+    if (Math.abs(userAnswerNum - correctAnswerNum) <= 0.15) {
+      feedback.innerHTML = "<span class='correct'>Correct!</span>";
+      tallyCorrect++;
+    } else {
+      feedback.innerHTML = `<span class='incorrect'>Incorrect. The correct answer was ${roundedCorrectAnswer}.</span>`;
+    }
+
+    tallyDisplay.innerText = `Correct Answers: ${tallyCorrect} / ${tallyTotal}`;
+
+    userAnswerBeforeRefresh = answerInput.value;
+
+    setTimeout(() => {
+      userAnswerBeforeRefresh = "";
+      generateSeriesCircuit();
+    }, 3000);
+  }
+
+  generateSeriesCircuit();
+</script>
+</body>
+</html>
