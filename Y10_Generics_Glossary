@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Genetics Glossary</title>
+  <style>
+    body {
+        font-family: Helvetica, sans-serif;
+        background-color: #f5f5f5;
+        padding: 1.5em;
+        text-align: center;
+    }
+
+    .card {
+        background: white;
+        padding: 1.5em;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        max-width: 900px;
+        margin: auto;
+    }
+
+    .definition-box {
+        background-color: #f0f8ff;
+        border-left: 5px solid #0264f7;
+        padding: 1em;
+        margin-bottom: 1.5em;
+        font-size: 1.2rem;
+        border-radius: 8px;
+        min-height: 60px;
+    }
+
+    .glossary {
+        margin-top: 1em;
+        font-size: 1.1rem;
+        line-height: 2.2rem;
+    }
+
+    .glossary span {
+        margin: 6px;
+        padding: 8px 12px;
+        background-color: #f0f8ff;
+        border-radius: 6px;
+        display: inline-block;
+        transition: background-color 0.2s;
+        cursor: pointer;
+    }
+
+    .glossary span:hover {
+        background-color: #dbeeff;
+    }
+
+    .term {
+        font-weight: bold;
+        color: #000f99;
+    }
+
+    .definition {
+        display: block;
+        margin-top: 6px;
+        color: #333;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Genetics Glossary</h2>
+
+    <div class="definition-box" id="definitionBox">
+      <em>Click a word below to see its definition.</em>
+    </div>
+
+    <div class="glossary">
+      <span onclick="showDefinition('Inheritance', 'The passing on of genetic traits from parents to offspring.')">Inheritance</span>
+      <span onclick="showDefinition('DNA', 'Deoxyribonucleic acid, a molecule that carries genetic instructions.')">DNA</span>
+      <span onclick="showDefinition('Nucleotide', 'The basic building block of DNA, consisting of a sugar, phosphate, and base.')">Nucleotide</span>
+      <span onclick="showDefinition('Bases and base pairing', 'Four bases (A, T, C, G) pair specifically (A-T, C-G) in DNA.')">Bases and base pairing</span>
+      <span onclick="showDefinition('Gene', 'A section of DNA that codes for a protein.')">Gene</span>
+      <span onclick="showDefinition('Allele', 'Different versions of a gene.')">Allele</span>
+      <span onclick="showDefinition('Dominant', 'An allele that masks the effect of a recessive allele.')">Dominant</span>
+      <span onclick="showDefinition('Recessive', 'An allele whose effects are hidden when a dominant allele is present.')">Recessive</span>
+      <span onclick="showDefinition('Punnett Square', 'A diagram used to predict the outcomes of a genetic cross.')">Punnett Square</span>
+      <span onclick="showDefinition('Genotype', 'The genetic makeup of an organism.')">Genotype</span>
+      <span onclick="showDefinition('Phenotype', 'The physical expression of the genotype.')">Phenotype</span>
+      <span onclick="showDefinition('Genetic variation', 'Differences in genes among individuals.')">Genetic variation</span>
+      <span onclick="showDefinition('Diversity', 'The variety of life in a particular ecosystem or on Earth.')">Diversity</span>
+      <span onclick="showDefinition('Endemic Species', 'Species that are native to and found only in a particular place.')">Endemic Species</span>
+      <span onclick="showDefinition('Mutation', 'A change in the DNA sequence.')">Mutation</span>
+      <span onclick="showDefinition('Mutagen', 'An agent, like radiation or chemicals, that causes mutations.')">Mutagen</span>
+    </div>
+  </div>
+
+  <script>
+    function showDefinition(term, definition) {
+      const box = document.getElementById('definitionBox');
+      box.innerHTML = `<span class="term">${term}</span><span class="definition">${definition}</span>`;
+    }
+  </script>
+
+</body>
+</html>
