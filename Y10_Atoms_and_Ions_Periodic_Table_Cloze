@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Drag-and-Drop Cloze Quiz</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      padding: 2em;
+      background-color: #f5f5f5;
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 700px;
+      margin: auto;
+    }
+
+    .question {
+      display: none;
+    }
+
+    .question.active {
+      display: block;
+    }
+
+    .blank {
+      display: inline-block;
+      width: 120px;
+      border-bottom: 2px dashed #999;
+      margin: 0 5px;
+      min-height: 25px;
+      vertical-align: middle;
+      background-color: #f0f0f0;
+      padding: 4px 6px;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    .word-bank {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .draggable {
+      background: #e0e0e0;
+      border-radius: 8px;
+      padding: 10px 15px;
+      cursor: grab;
+      font-size: 1rem;
+      user-select: none;
+      transition: background 0.3s;
+    }
+
+    .draggable:hover {
+      background: #d0d0d0;
+    }
+
+    .correct {
+      background: #a0e6a0 !important;
+    }
+
+    .wrong {
+      background: #e6a0a0 !important;
+    }
+
+    .controls {
+      margin-top: 20px;
+    }
+
+    button {
+      margin-top: 1em;
+      padding: 0.8em 1.6em;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #feedback {
+      margin-top: 1em;
+      font-weight: bold;
+      color: #444;
+    }
+
+    #progress {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #444;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div id="quiz-container"></div>
+    <div id="progress">Progress: 1/15</div> <!-- Progress section -->
+  </div>
+  <script>
+    const questions = [
+     {
+  sentence: `An <span class="blank" data-answer="atom"></span> is the smallest part of matter. When atoms join together, they make a <span class="blank" data-answer="molecule"></span>. A substance made of only one kind of atom is called an <span class="blank" data-answer="element"></span>, and a <span class="blank" data-answer="compound"></span> is made from atoms of different elements.`,
+  wordBank: ["molecule", "compound", "element", "atom"]
+},
+{
+  sentence: `An <span class="blank" data-answer="element"></span> is made of just one type of atom. A <span class="blank" data-answer="compound"></span> contains atoms of different elements bonded together. These atoms are in a fixed <span class="blank" data-answer="ratio"></span>. The compound has <span class="blank" data-answer="different"></span> properties to the elements it came from.`,
+  wordBank: ["compound", "element", "different", "ratio"]
+},
+{
+  sentence: `The chemical symbol for sodium is <span class="blank" data-answer="Na"></span>. The symbol for oxygen is <span class="blank" data-answer="O"></span>. These symbols are found on the <span class="blank" data-answer="periodic"></span> table and represent different <span class="blank" data-answer="elements"></span>.`,
+  wordBank: ["Na", "O", "periodic", "elements"]
+},
+{
+  sentence: `In H₂O, there are two <span class="blank" data-answer="hydrogen"></span> atoms and one <span class="blank" data-answer="oxygen"></span> atom. In CO₂, there are two <span class="blank" data-answer="oxygen"></span> atoms and one <span class="blank" data-answer="carbon"></span> atom.`,
+  wordBank: ["oxygen", "carbon", "hydrogen", "oxygen"]
+},
+{
+  sentence: `Atoms are made of <span class="blank" data-answer="protons"></span>, <span class="blank" data-answer="neutrons"></span>, and <span class="blank" data-answer="electrons"></span>. Protons have a <span class="blank" data-answer="positive"></span> charge, electrons are negative, and neutrons have no charge.`,
+  wordBank: ["protons", "neutrons", "electrons", "positive"]
+},
+{
+  sentence: `The <span class="blank" data-answer="atomic"></span> number tells how many protons an atom has. The <span class="blank" data-answer="mass"></span> number tells the total of protons and <span class="blank" data-answer="neutrons"></span>. These numbers are found on the <span class="blank" data-answer="periodic"></span> table.`,
+  wordBank: ["periodic", "atomic", "mass", "neutrons"]
+},
+{
+  sentence: `In a neutral atom, the number of <span class="blank" data-answer="electrons"></span> is the same as the number of <span class="blank" data-answer="protons"></span>. This makes the overall charge of the atom <span class="blank" data-answer="zero"></span>.`,
+  wordBank: ["electrons", "protons", "zero"]
+},
+{
+  sentence: `The <span class="blank" data-answer="nucleus"></span> is the centre of the atom and contains <span class="blank" data-answer="protons"></span> and <span class="blank" data-answer="neutrons"></span>. The <span class="blank" data-answer="electrons"></span> move in shells around the nucleus.`,
+  wordBank: ["nucleus", "protons", "neutrons", "electrons"]
+},
+{
+  sentence: `The electron arrangement of oxygen is <span class="blank" data-answer="2,6"></span>. It has two electrons in the first shell and <span class="blank" data-answer="six"></span> in the second. Oxygen has <span class="blank" data-answer="two"></span> energy levels.`,
+  wordBank: ["2,6", "six", "two"]
+},
+{
+  sentence: `The number of <span class="blank" data-answer="energy"></span> levels an atom has shows which period it’s in. The number of <span class="blank" data-answer="outer"></span> electrons shows which group it’s in. Both can be found on the <span class="blank" data-answer="periodic"></span> table.`,
+  wordBank: ["energy", "periodic", "outer"]
+},
+{
+  sentence: `Group 1 metals are very <span class="blank" data-answer="reactive"></span> because they only need to lose <span class="blank" data-answer="one"></span> electron. Group 18 elements are unreactive because their outer shell is <span class="blank" data-answer="full"></span>.`,
+  wordBank: ["reactive", "full", "one"]
+},
+{
+  sentence: `An <span class="blank" data-answer="ion"></span> is an atom that has lost or gained <span class="blank" data-answer="electrons"></span>. This helps it to become more <span class="blank" data-answer="stable"></span> by filling or emptying its <span class="blank" data-answer="outer"></span> shell.`,
+  wordBank: ["ion", "electrons", "outer", "stable"]
+},
+{
+  sentence: `When an atom loses electrons, it forms a <span class="blank" data-answer="cation"></span>. When it gains electrons, it becomes an <span class="blank" data-answer="anion"></span>. The number of <span class="blank" data-answer="protons"></span> and <span class="blank" data-answer="neutrons"></span> stays the same.`,
+  wordBank: ["anion", "cation", "protons", "neutrons"]
+},
+{
+  sentence: `Ions have the same number of <span class="blank" data-answer="protons"></span> and <span class="blank" data-answer="neutrons"></span> as the atom they came from. What changes is the number of <span class="blank" data-answer="electrons"></span>, giving the ion a positive or negative <span class="blank" data-answer="charge"></span>.`,
+  wordBank: ["protons", "neutrons", "electrons", "charge"]
+},
+{
+  sentence: `A calcium ion (Ca²⁺) has 20 <span class="blank" data-answer="protons"></span> and only 18 <span class="blank" data-answer="electrons"></span>. This gives it a charge of <span class="blank" data-answer="positive"></span>, since it has more protons than <span class="blank" data-answer="electrons"></span>.`,
+  wordBank: ["protons", "electrons", "positive", "electrons"]
+},
+{
+  sentence: `To test for oxygen gas, you put a <span class="blank" data-answer="glowing"></span> splint into the gas. If the splint <span class="blank" data-answer="relights"></span>, it shows that <span class="blank" data-answer="oxygen"></span> is present. This is a <span class="blank" data-answer="positive"></span> test.`,
+  wordBank: ["relights", "positive", "glowing", "oxygen"]
+},
+{
+  sentence: `Na⁺ and Cl⁻ form <span class="blank" data-answer="NaCl"></span>. This compound is called <span class="blank" data-answer="sodium chloride"></span>. The charges must <span class="blank" data-answer="cancel"></span> out to make the compound neutral.`,
+  wordBank: ["cancel", "sodium chloride", "NaCl"]
+},
+{
+  sentence: `The name of MgO is <span class="blank" data-answer="magnesium oxide"></span>. The name of NaCl is <span class="blank" data-answer="sodium chloride"></span>. These are <span class="blank" data-answer="ionic"></span> compounds made of metal and non-metal ions.`,
+  wordBank: ["ionic", "magnesium oxide", "sodium chloride"]
+},
+{
+  sentence: `In a chemical equation, the number of <span class="blank" data-answer="atoms"></span> on both sides must be the same. This follows the law of <span class="blank" data-answer="conservation"></span> of mass. We use <span class="blank" data-answer="coefficients"></span> to balance equations.`,
+  wordBank: ["atoms", "conservation", "coefficients"]
+},
+{
+  sentence: `The atomic model has changed over time. New <span class="blank" data-answer="discoveries"></span> and better <span class="blank" data-answer="technology"></span> helped scientists improve it. Each new model built on the ideas of earlier <span class="blank" data-answer="scientists"></span>.`,
+  wordBank: ["scientists", "discoveries", "technology"]
+}
+
+    ];
+
+  let currentIndex = 0;
+
+    function renderQuestion(index) {
+      const q = questions[index];
+      const container = document.getElementById('quiz-container');
+
+      const qDiv = document.createElement('div');
+      qDiv.classList.add('question');
+      if (index === 0) qDiv.classList.add('active');
+
+      const sentenceHTML = `<p>${q.sentence}</p>`;
+      const wordBankHTML = q.wordBank.map(word =>
+        `<div class="draggable" draggable="true" ondragstart="drag(event)" id="word-${word}">${word}</div>`
+      ).join('');
+
+      qDiv.innerHTML = `
+        ${sentenceHTML}
+        <div class="word-bank">${wordBankHTML}</div>
+        <div class="controls">
+          <button onclick="checkAnswers(this)">Check Answer</button>
+        </div>
+      `;
+
+      container.appendChild(qDiv);
+
+      const blanks = qDiv.querySelectorAll('.blank');
+      blanks.forEach(blank => {
+        blank.setAttribute('ondragover', 'allowDrop(event)');
+        blank.setAttribute('ondrop', 'drop(event)');
+      });
+
+      updateProgress(); // Update progress when rendering each question
+    }
+
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+
+    function drag(ev) {
+      ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+      ev.preventDefault();
+      const data = ev.dataTransfer.getData("text");
+      const dragged = document.getElementById(data);
+
+      // If already filled, remove the old word
+      if (ev.target.firstChild) {
+        ev.target.innerHTML = '';
+      }
+
+      const clone = dragged.cloneNode(true);
+      clone.setAttribute("draggable", "false");
+      clone.style.cursor = "default";
+      clone.classList.remove("draggable");
+      ev.target.innerHTML = '';
+      ev.target.appendChild(clone);
+    }
+
+    function checkAnswers(button) {
+      const questionDiv = button.closest('.question');
+      const blanks = questionDiv.querySelectorAll('.blank');
+      let allCorrect = true;
+
+      blanks.forEach(blank => {
+        const correctAnswer = blank.dataset.answer.toLowerCase();
+        const userAnswer = blank.textContent.trim().toLowerCase();
+
+        if (userAnswer === correctAnswer) {
+          blank.classList.add('correct');
+        } else {
+          allCorrect = false;
+        }
+      });
+
+      if (allCorrect) {
+        setTimeout(() => nextQuestion(), 600);
+      } else {
+        // Reset wrong answers after short delay
+        setTimeout(() => {
+          blanks.forEach(blank => {
+            blank.innerHTML = '';
+            blank.style.borderColor = '#000';
+            blank.classList.remove('correct');
+          });
+          // Re-add word bank
+          const wordBank = questionDiv.querySelector('.word-bank');
+          wordBank.innerHTML = '';
+          const words = questions[currentIndex].wordBank;
+          words.forEach(word => {
+            const wordDiv = document.createElement('div');
+            wordDiv.className = 'draggable';
+            wordDiv.draggable = true;
+            wordDiv.id = `word-${word}`;
+            wordDiv.ondragstart = drag;
+            wordDiv.textContent = word;
+            wordBank.appendChild(wordDiv);
+          });
+        }, 800);
+      }
+    }
+
+    function nextQuestion() {
+      const questionsDivs = document.querySelectorAll('.question');
+      questionsDivs[currentIndex].classList.remove('active');
+      currentIndex++;
+      if (currentIndex < questions.length) {
+        questionsDivs[currentIndex].classList.add('active');
+      } else {
+        document.getElementById('quiz-container').innerHTML = "<h2>Ka pai! You’ve finished the quiz!</h2>";
+      }
+      updateProgress(); // Update progress when moving to next question
+    }
+
+    function updateProgress() {
+      const progressElement = document.getElementById('progress');
+      progressElement.textContent = `Progress: ${currentIndex + 1}/${questions.length}`;
+    }
+
+    // Render all questions at load
+    questions.forEach((_, i) => renderQuestion(i)); 
+    </script>
+</body>
+</html>
