@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Learning Outcomes</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      background-color: #f5f5f5;
+      padding: 1.5em;
+      text-align: center;
+    }
+
+    .container {
+      background: white;
+      padding: 1.5em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h1 {
+      margin-bottom: 1em;
+    }
+
+    ol {
+      font-size: 1rem;
+      line-height: 2rem;
+      margin-left: 0;
+      padding-left: 1.2em;
+      text-align: left;
+    }
+
+    li {
+      margin-bottom: 1em;
+      position: relative;
+    }
+
+    .info-button {
+      margin-left: 0.5em;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 1.6em;
+      height: 1.6em;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1em;
+      vertical-align: middle;
+    }
+
+    .popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 2px solid #007BFF;
+      border-radius: 10px;
+      padding: 1em;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      max-width: 500px;
+      z-index: 1000;
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+    }
+
+    .popup p {
+      margin-bottom: 0.5em;
+    }
+
+    .close-btn {
+      background: #007BFF;
+      color: white;
+      border: none;
+      padding: 0.4em 0.8em;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 0.5em;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Genetics Learning Outcomes</h1>
+  <ol id="outcomes-list"></ol>
+</div>
+
+<div class="overlay" id="overlay" onclick="closePopup()"></div>
+<div class="popup" id="popup">
+  <p id="popup-text"></p>
+  <button class="close-btn" onclick="closePopup()">Close</button>
+</div>
+
+<script>
+  const outcomes = [
+    "Describe the basic structure and shape of DNA and the base pairing rule.",
+    "Describe and define the terms: DNA, gene, allele, chromosome, genotype, phenotype.",
+    "Explain the relationships between: DNA, gene, allele, chromosome, genotype, phenotype.",
+    "Describe how alleles can be dominant or recessive forms of a gene.",
+    "Explain what a genotype is and identify genotypes as being homozygous dominant, homozygous recessive or heterozygous.",
+    "Draw Punnett squares to show inheritance patterns of dominant and recessive alleles.",
+    "Use Punnett squares to predict genotype and phenotype ratios.",
+    "Discuss the advantages of genetic diversity for species in the wild.",
+    "Identify types of adaptations: structural, behavioural and physiological.",
+    "Explain the connections between adaptations and survival in living organisms.",
+    "Describe what a mutation is and what causes mutations.",
+    "Explain that the base sequence of a gene is changed to produce a new phenotype."
+  ];
+
+ const explanations = [
+  "DNA (deoxyribonucleic acid) is shaped like a twisted ladder, known as a double helix. Each 'rung' of the ladder is made from two bases that pair specifically: adenine (A) always pairs with thymine (T), and cytosine (C) with guanine (G). These pairs are held together by hydrogen bonds. For example, if one strand of DNA has the sequence ACGT, the opposite strand will be TGCA. This structure allows DNA to replicate accurately during cell division.",
+  "DNA is the molecule that carries the genetic blueprint of living organisms. Genes are specific sequences of DNA that code for proteins or traits. Alleles are different versions of the same gene, often resulting in different traits. Chromosomes are long strands of DNA tightly coiled around proteins. Each person has two copies of each chromosome (one from each parent), and therefore two alleles for most genes. The genotype is the combination of alleles you have (e.g. Bb), while the phenotype is the trait that is expressed (e.g. brown eyes).",
+  "Each gene is a segment of DNA found on a chromosome. Alleles are the different versions of these genes. Your genotype is the pair of alleles you inherit for a trait, and it determines your phenotype – the observable characteristics. For example, if 'B' is the allele for brown eyes and 'b' is for blue eyes, then BB or Bb results in brown eyes, while bb results in blue eyes.",
+  "Alleles can be either dominant or recessive. A dominant allele only needs one copy to show its effect, while a recessive allele must be present in both copies to be seen. For instance, if brown eyes (B) are dominant over blue eyes (b), then people with BB or Bb genotypes will have brown eyes. Only individuals with the bb genotype will have blue eyes.",
+  "Genotypes show the allele combinations in an organism. A homozygous dominant genotype has two dominant alleles (BB), homozygous recessive has two recessive alleles (bb), and heterozygous has one of each (Bb). These combinations help predict what traits the organism may show and pass on to offspring.",
+  "A Punnett square is a tool used in genetics to show how alleles from two parents can combine in their offspring. For example, if both parents have the genotype Bb, the possible combinations for the children are BB, Bb, and bb. This helps predict the chances of a child inheriting certain traits.",
+  "You can use Punnett squares to count how many times each genotype appears and predict the traits. For example, a Bb x Bb cross gives: 1 BB, 2 Bb, 1 bb – a genotype ratio of 1:2:1. The phenotype ratio depends on which alleles are dominant or recessive. If B is dominant, then 3 out of 4 offspring will show the dominant trait (brown eyes), and 1 will show the recessive trait (blue eyes).",
+  "Genetic diversity refers to the range of different genetic combinations in a population. More diversity means a greater chance that some individuals have traits that help them survive changes, like a new disease or climate shift. For example, in a population with diverse immune system genes, some individuals may survive a virus outbreak that others cannot.",
+  "Adaptations are inherited traits that help organisms survive in their environment. Structural adaptations are physical features (e.g., thick fur for warmth), behavioural adaptations are actions animals take (e.g., birds migrating), and physiological adaptations are internal processes (e.g., snakes producing venom). These traits increase the chance of survival and reproduction.",
+  "Adaptations give organisms an advantage in their environment. For instance, a rabbit with fur the same color as snow is less visible to predators in winter, making it more likely to survive and reproduce. Over time, beneficial adaptations become more common in the population as those with them pass on their genes.",
+  "A mutation is a change in the sequence of DNA. It can be caused by external factors like UV radiation or harmful chemicals, or can occur randomly during cell division. Mutations can be harmful, helpful, or have no effect. Sometimes they create new traits that help an organism survive, like resistance to disease.",
+  "When a mutation changes the sequence of bases in a gene, it can alter the structure of the protein the gene codes for. This may result in a new phenotype (observable trait). For example, a mutation might cause a change in eye color, blood type, or the ability to digest certain foods. Some mutations are passed on if they occur in reproductive cells."
+];
+
+
+  const list = document.getElementById('outcomes-list');
+
+  outcomes.forEach((text, index) => {
+    const li = document.createElement('li');
+    li.innerHTML = `${text} <button class="info-button" onclick="showPopup(${index})">?</button>`;
+    list.appendChild(li);
+  });
+
+  function showPopup(index) {
+    document.getElementById('popup-text').textContent = explanations[index];
+    document.getElementById('popup').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
+  }
+
+  function closePopup() {
+    document.getElementById('popup').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+  }
+</script>
+
+</body>
+</html>
