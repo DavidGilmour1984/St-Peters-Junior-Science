@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Acid Reaction Drag-and-Drop</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      background-color: #f5f5f5;
+      padding: 1.5em;
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      padding: 1.5em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 800px;
+      margin: auto;
+    }
+
+    .reaction {
+      margin: 1.5em 0;
+      font-size: 1.3rem;
+    }
+
+    .drop-zone {
+      display: inline-block;
+      min-width: 100px;
+      min-height: 40px;
+      background-color: #e0e0e0;
+      border-radius: 8px;
+      margin: 0 5px;
+      font-weight: bold;
+      vertical-align: middle;
+      line-height: 40px;
+    }
+
+    .draggable {
+      background: #d9edf7;
+      border-radius: 8px;
+      padding: 8px;
+      cursor: grab;
+      margin: 5px;
+      font-size: 1rem;
+      user-select: none;
+      display: inline-block;
+    }
+
+    .draggable:hover {
+      background: #c4e3f3;
+    }
+
+    .word-bank {
+      margin-top: 10px;
+    }
+
+    button {
+      margin-top: 1em;
+      padding: 0.5em 1.6em;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #28a745;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    .correct {
+      background-color: #c8e6c9 !important;
+    }
+
+    .incorrect {
+      background-color: #ffcdd2 !important;
+    }
+
+    #scoreDisplay {
+      margin-top: 1em;
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Acid + Base Word Equations</h2>
+    <div class="reaction" id="reactionArea">
+      <!-- Reaction goes here -->
+    </div>
+    <div class="word-bank" id="wordBank">
+      <!-- Draggable words -->
+    </div>
+<div style="display: flex; justify-content: center; align-items: center; gap: 1em; margin-top: 1em;">
+  <button onclick="checkAnswer()">Check Answer</button>
+  <div id="scoreDisplay">Score: 0/0</div>
+</div>
+
+
+  <script>
+   const reactions = [
+  // Hydrochloric Acid + Hydroxides
+  { acid: "Hydrochloric Acid", base: "Sodium Hydroxide", products: ["Sodium Chloride", "Water"] },
+  { acid: "Hydrochloric Acid", base: "Potassium Hydroxide", products: ["Potassium Chloride", "Water"] },
+  { acid: "Hydrochloric Acid", base: "Calcium Hydroxide", products: ["Calcium Chloride", "Water"] },
+  { acid: "Hydrochloric Acid", base: "Magnesium Hydroxide", products: ["Magnesium Chloride", "Water"] },
+  { acid: "Hydrochloric Acid", base: "Lithium Hydroxide", products: ["Lithium Chloride", "Water"] },
+  { acid: "Hydrochloric Acid", base: "Barium Hydroxide", products: ["Barium Chloride", "Water"] },
+  { acid: "Hydrochloric Acid", base: "Aluminium Hydroxide", products: ["Aluminium Chloride", "Water"] },
+  { acid: "Hydrochloric Acid", base: "Iron(II) Hydroxide", products: ["Iron(II) Chloride", "Water"] },
+  { acid: "Hydrochloric Acid", base: "Iron(III) Hydroxide", products: ["Iron(III) Chloride", "Water"] },
+  { acid: "Hydrochloric Acid", base: "Zinc Hydroxide", products: ["Zinc Chloride", "Water"] },
+
+  // Hydrochloric Acid + Carbonates
+  { acid: "Hydrochloric Acid", base: "Sodium Carbonate", products: ["Sodium Chloride", "Water", "Carbon Dioxide"] },
+  { acid: "Hydrochloric Acid", base: "Potassium Carbonate", products: ["Potassium Chloride", "Water", "Carbon Dioxide"] },
+  { acid: "Hydrochloric Acid", base: "Calcium Carbonate", products: ["Calcium Chloride", "Water", "Carbon Dioxide"] },
+  { acid: "Hydrochloric Acid", base: "Magnesium Carbonate", products: ["Magnesium Chloride", "Water", "Carbon Dioxide"] },
+  { acid: "Hydrochloric Acid", base: "Lithium Carbonate", products: ["Lithium Chloride", "Water", "Carbon Dioxide"] },
+  { acid: "Hydrochloric Acid", base: "Barium Carbonate", products: ["Barium Chloride", "Water", "Carbon Dioxide"] },
+  { acid: "Hydrochloric Acid", base: "Aluminium Carbonate", products: ["Aluminium Chloride", "Water", "Carbon Dioxide"] },
+  { acid: "Hydrochloric Acid", base: "Iron(II) Carbonate", products: ["Iron(II) Chloride", "Water", "Carbon Dioxide"] },
+  { acid: "Hydrochloric Acid", base: "Zinc Carbonate", products: ["Zinc Chloride", "Water", "Carbon Dioxide"] },
+
+  // Sulfuric Acid + Hydroxides
+  { acid: "Sulfuric Acid", base: "Sodium Hydroxide", products: ["Sodium Sulfate", "Water"] },
+  { acid: "Sulfuric Acid", base: "Potassium Hydroxide", products: ["Potassium Sulfate", "Water"] },
+  { acid: "Sulfuric Acid", base: "Calcium Hydroxide", products: ["Calcium Sulfate", "Water"] },
+  { acid: "Sulfuric Acid", base: "Magnesium Hydroxide", products: ["Magnesium Sulfate", "Water"] },
+  { acid: "Sulfuric Acid", base: "Lithium Hydroxide", products: ["Lithium Sulfate", "Water"] },
+  { acid: "Sulfuric Acid", base: "Barium Hydroxide", products: ["Barium Sulfate", "Water"] },
+  { acid: "Sulfuric Acid", base: "Aluminium Hydroxide", products: ["Aluminium Sulfate", "Water"] },
+  { acid: "Sulfuric Acid", base: "Iron(II) Hydroxide", products: ["Iron(II) Sulfate", "Water"] },
+  { acid: "Sulfuric Acid", base: "Zinc Hydroxide", products: ["Zinc Sulfate", "Water"] },
+  { acid: "Sulfuric Acid", base: "Copper(II) Hydroxide", products: ["Copper(II) Sulfate", "Water"] },
+
+  // Sulfuric Acid + Carbonates
+  { acid: "Sulfuric Acid", base: "Sodium Carbonate", products: ["Sodium Sulfate", "Water", "Carbon Dioxide"] },
+  { acid: "Sulfuric Acid", base: "Potassium Carbonate", products: ["Potassium Sulfate", "Water", "Carbon Dioxide"] },
+  { acid: "Sulfuric Acid", base: "Calcium Carbonate", products: ["Calcium Sulfate", "Water", "Carbon Dioxide"] },
+  { acid: "Sulfuric Acid", base: "Magnesium Carbonate", products: ["Magnesium Sulfate", "Water", "Carbon Dioxide"] },
+  { acid: "Sulfuric Acid", base: "Zinc Carbonate", products: ["Zinc Sulfate", "Water", "Carbon Dioxide"] },
+  { acid: "Sulfuric Acid", base: "Copper(II) Carbonate", products: ["Copper(II) Sulfate", "Water", "Carbon Dioxide"] },
+  { acid: "Sulfuric Acid", base: "Barium Carbonate", products: ["Barium Sulfate", "Water", "Carbon Dioxide"] },
+  { acid: "Sulfuric Acid", base: "Iron(II) Carbonate", products: ["Iron(II) Sulfate", "Water", "Carbon Dioxide"] },
+
+  // Nitric Acid + Hydroxides
+  { acid: "Nitric Acid", base: "Sodium Hydroxide", products: ["Sodium Nitrate", "Water"] },
+  { acid: "Nitric Acid", base: "Potassium Hydroxide", products: ["Potassium Nitrate", "Water"] },
+  { acid: "Nitric Acid", base: "Calcium Hydroxide", products: ["Calcium Nitrate", "Water"] },
+  { acid: "Nitric Acid", base: "Magnesium Hydroxide", products: ["Magnesium Nitrate", "Water"] },
+  { acid: "Nitric Acid", base: "Zinc Hydroxide", products: ["Zinc Nitrate", "Water"] },
+  { acid: "Nitric Acid", base: "Aluminium Hydroxide", products: ["Aluminium Nitrate", "Water"] },
+
+  // Nitric Acid + Carbonates
+  { acid: "Nitric Acid", base: "Sodium Carbonate", products: ["Sodium Nitrate", "Water", "Carbon Dioxide"] },
+  { acid: "Nitric Acid", base: "Calcium Carbonate", products: ["Calcium Nitrate", "Water", "Carbon Dioxide"] },
+  { acid: "Nitric Acid", base: "Magnesium Carbonate", products: ["Magnesium Nitrate", "Water", "Carbon Dioxide"] },
+  { acid: "Nitric Acid", base: "Zinc Carbonate", products: ["Zinc Nitrate", "Water", "Carbon Dioxide"] }
+];
+
+
+    const allWords = [
+  "Sodium Chloride", "Potassium Nitrate", "Calcium Sulfate", "Calcium Chloride",
+  "Sodium Sulfate", "Calcium Nitrate", "Water", "Carbon Dioxide",
+  "Potassium Chloride", "Magnesium Chloride", "Lithium Chloride", "Barium Chloride",
+  "Aluminium Chloride", "Iron(II) Chloride", "Iron(III) Chloride", "Zinc Chloride",
+  "Potassium Sulfate", "Magnesium Sulfate", "Lithium Sulfate", "Barium Sulfate",
+  "Aluminium Sulfate", "Iron(II) Sulfate", "Zinc Sulfate", "Copper(II) Sulfate",
+  "Magnesium Nitrate", "Zinc Nitrate", "Aluminium Nitrate", "Sodium Nitrate",
+  "Magnesium Carbonate", "Zinc Carbonate", "Copper(II) Carbonate",
+  "Iron(II) Carbonate", "Barium Carbonate", "Calcium Carbonate",
+  "Potassium Carbonate", "Sodium Carbonate", "Iron(III) Hydroxide",
+  "Copper(II) Hydroxide", "Lithium Hydroxide"
+];
+let currentReaction;
+let score = 0;
+let attempts = 0;
+
+function allowDrop(ev) {
+  ev.preventDefault();
+}
+
+function drag(ev) {
+  ev.dataTransfer.setData("text", ev.target.id);
+}
+
+function drop(ev) {
+  ev.preventDefault();
+  const data = ev.dataTransfer.getData("text");
+  const draggedEl = document.getElementById(data);
+  ev.target.innerHTML = draggedEl.innerHTML;
+  ev.target.dataset.value = draggedEl.innerHTML;
+}
+
+function generateReaction() {
+  currentReaction = reactions[Math.floor(Math.random() * reactions.length)];
+  const { acid, base, products } = currentReaction;
+
+  let reactionHTML = `
+    ${acid} + ${base} → 
+    <span class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)" data-expected="${products[0]}"></span> + 
+    <span class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)" data-expected="${products[1]}"></span>
+  `;
+
+  if (products[2]) {
+    reactionHTML += ` + <span class="drop-zone" ondrop="drop(event)" ondragover="allowDrop(event)" data-expected="${products[2]}"></span>`;
+  }
+
+  document.getElementById("reactionArea").innerHTML = reactionHTML;
+
+  // Build word options: correct ones + "Water" + "Carbon Dioxide" + 3 distractors
+  const correctWords = [...products];
+  const fixedExtras = ["Water", "Carbon Dioxide"];
+  const possibleDistractors = allWords.filter(
+    word => !correctWords.includes(word) && !fixedExtras.includes(word)
+  );
+  const randomDistractors = possibleDistractors
+    .sort(() => 0.5 - Math.random())
+    .slice(0, 3);
+  const wordOptions = Array.from(
+    new Set([...correctWords, ...fixedExtras, ...randomDistractors])
+  ).sort(() => 0.5 - Math.random());
+
+  // Display draggable words
+  document.getElementById("wordBank").innerHTML = wordOptions.map((word, index) =>
+    `<div class="draggable" draggable="true" ondragstart="drag(event)" id="drag${index}">${word}</div>`
+  ).join('');
+}
+
+function updateScoreDisplay() {
+  document.getElementById("scoreDisplay").textContent = `Score: ${score}/${attempts}`;
+}
+
+function checkAnswer() {
+  const dropZones = document.querySelectorAll('.drop-zone');
+  let allCorrect = true;
+
+  dropZones.forEach(zone => {
+    const expected = zone.dataset.expected;
+    const value = zone.dataset.value;
+    if (value === expected) {
+      zone.classList.add('correct');
+      zone.classList.remove('incorrect');
+    } else {
+      zone.classList.add('incorrect');
+      zone.classList.remove('correct');
+      allCorrect = false;
+    }
+  });
+
+  attempts++;
+  if (allCorrect) {
+    score++;
+    updateScoreDisplay();
+    setTimeout(generateReaction, 1000);
+  } else {
+    updateScoreDisplay();
+    setTimeout(() => {
+      // Fill in correct answers before changing question
+      dropZones.forEach(zone => {
+        zone.innerHTML = zone.dataset.expected;
+        zone.classList.remove('incorrect');
+        zone.classList.add('correct');
+      });
+      setTimeout(() => {
+        generateReaction();
+      }, 2000);
+    }, 500);
+  }
+}
+
+generateReaction();
+
+  </script>
+</body>
+</html>
