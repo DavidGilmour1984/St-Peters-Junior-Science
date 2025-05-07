@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Forces and Motion Question Generator</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      padding: 2em;
+      background-color: #f5f5f5;
+      text-align: center;
+    }
+    .card {
+      background: white;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      margin: auto;
+    }
+    .button-container {
+      display: flex;
+      justify-content: center;
+      gap: 1em;
+      margin-top: 1em;
+    }
+    button {
+      padding: 1em 2em;
+      font-size: 1rem;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background-color: #007BFF;
+      color: white;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .hidden {
+      display: none;
+    }
+    #working, #answer {
+      margin-top: 1em;
+      font-size: 1.2em;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Forces and Motion Question Generator</h2>
+    <div id="question"></div>
+    <div class="button-container">
+      <button onclick="generateQuestion()">Generate Question</button>
+      <button onclick="showAnswer()">Answer</button>
+    </div>
+    <div id="working" class="hidden"></div>
+    <div id="answer" class="hidden"></div>
+  </div>
+
+  <script>
+    const g = 10;
+    let current = {};
+
+    function getRandom(min, max) {
+      return +(Math.random() * (max - min) + min).toFixed(2);
+    }
+
+    function choose(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function generateQuestion() {
+      document.getElementById('working').classList.add('hidden');
+      document.getElementById('answer').classList.add('hidden');
+
+      const formulas = [
+        'v = d / t',
+        't = d / v',
+        'a = v / t',
+        't = v / a',
+        'f = m * a',
+        'a = f / m',
+        'w = m * g',
+        'm = w / g'
+      ];
+      const formula = choose(formulas);
+
+      let question = '', working = '', answer = '';
+
+      if (formula === 'v = d / t') {
+        const d = getRandom(50, 200);
+        const t = getRandom(2, 10);
+        const v = +(d / t).toFixed(2);
+        const contexts = [
+          `A cyclist travels ${d} meters in ${t} seconds. What is their velocity?`,
+          `A drone flies ${d} meters in ${t} seconds. What is its speed?`,
+          `A boat moves ${d} meters across a lake in ${t} seconds. What is its velocity?`,
+          `A train covers ${d} meters in ${t} seconds. Find its velocity.`,
+          `An athlete runs ${d} meters in ${t} seconds. What is their speed?`,
+          `A plane taxis ${d} meters in ${t} seconds. Determine the velocity.`,
+          `A robot rolls ${d} meters in ${t} seconds. Calculate its speed.`,
+          `A kangaroo hops ${d} meters in ${t} seconds. What's its velocity?`,
+          `A parcel slides ${d} meters in ${t} seconds. Find the velocity.`,
+          `A bus moves ${d} meters in ${t} seconds. What's its average speed?`
+        ];
+        question = choose(contexts);
+        working = `v = d / t = ${d} / ${t}`;
+        answer = `v = ${v} m/s`;
+
+      } else if (formula === 't = d / v') {
+        const d = getRandom(100, 300);
+        const v = getRandom(10, 40);
+        const t = +(d / v).toFixed(2);
+        const contexts = [
+          `A cheetah runs ${d} meters at ${v} m/s. How long does it take?`,
+          `A bus travels ${d} meters at ${v} m/s. How much time does it take?`,
+          `A remote-controlled car covers ${d} meters at ${v} m/s. Calculate the time.`,
+          `A spaceship travels ${d} meters at ${v} m/s. How long is the trip?`,
+          `A skier glides ${d} meters at ${v} m/s. How long will it take?`,
+          `A boat crosses ${d} meters of river at ${v} m/s. How much time does it take?`,
+          `A racecar drives ${d} meters at ${v} m/s. How long does the lap take?`,
+          `A jogger runs ${d} meters at ${v} m/s. How long does the lap take.`,
+          `A delivery drone flies ${d} meters at ${v} m/s. How much time does it take?`,
+          `A horse gallops ${d} meters at ${v} m/s. Duration?`
+        ];
+        question = choose(contexts);
+        working = `t = d / v = ${d} / ${v}`;
+        answer = `t = ${t} seconds`;
+
+      } else if (formula === 'a = v / t') {
+        const v = getRandom(10, 30);
+        const t = getRandom(2, 5);
+        const a = +(v / t).toFixed(2);
+        const contexts = [
+          `A rollercoaster speeds up to ${v} m/s in ${t} seconds. What is its acceleration?`,
+          `A sled accelerates to ${v} m/s in ${t} seconds. Find the acceleration.`,
+          `A spaceship reaches ${v} m/s in ${t} seconds after launch. What's the acceleration?`,
+          `A drone climbs to ${v} m/s in ${t} seconds. Determine its acceleration.`,
+          `A scooter goes from rest to ${v} m/s in ${t} seconds. What's the acceleration?`,
+          `A jet takes off to ${v} m/s in ${t} seconds. Find its acceleration.`,
+          `An RC car speeds up to ${v} m/s in ${t} seconds. Calculate the acceleration?`,
+          `An elevator increases speed to ${v} m/s in ${t} seconds. Calculate acceleration.`,
+          `A motorcycle hits ${v} m/s in ${t} seconds. What’s its acceleration?`,
+          `A spaceship engine pushes it to ${v} m/s in ${t} seconds. Acceleration?`
+        ];
+        question = choose(contexts);
+        working = `a = v / t = ${v} / ${t}`;
+        answer = `a = ${a} m/s²`;
+
+      } else if (formula === 't = v / a') {
+        const v = getRandom(20, 60);
+        const a = getRandom(4, 10);
+        const t = +(v / a).toFixed(2);
+        const contexts = [
+          `An elevator reaches a speed of ${v} m/s with an acceleration of ${a} m/s². How long did it take?`,
+          `A car accelerates to ${v} m/s at a rate of ${a} m/s². How much time is needed?`,
+          `A plane takes ${a} m/s² to reach ${v} m/s. How long did that take?`,
+          `A bullet speeds up to ${v} m/s at ${a} m/s². How long does it take?`,
+          `A drone reaches ${v} m/s at ${a} m/s². Calculate the time it takes.`,
+          `A rocket accelerates to ${v} m/s at ${a} m/s². How long does it take?`,
+          `A car speeds up to ${v} m/s with acceleration of ${a} m/s². How long does it take?`,
+          `A train hits ${v} m/s at ${a} m/s². How long does it take.`,
+          `A ship reaches ${v} m/s with ${a} m/s² acceleration. How long does it take?`,
+          `A cyclist hits ${v} m/s while acclerating at ${a} m/s². How long does it take?`
+        ];
+        question = choose(contexts);
+        working = `t = v / a = ${v} / ${a}`;
+        answer = `t = ${t} seconds`;
+
+      } else if (formula === 'f = m * a') {
+        const m = getRandom(2, 30);
+        const a = getRandom(3, 9);
+        const f = +(m * a).toFixed(2);
+        const contexts = [
+          `A cart with mass ${m} kg accelerates at ${a} m/s². What is the force applied?`,
+          `A rocket with mass ${m} kg accelerates upward at ${a} m/s². Calculate the force.`,
+          `A child pushes a toy with mass ${m} kg and causes it to accelerate at ${a} m/s². Find the force.`,
+          `A car of mass ${m} kg accelerates at ${a} m/s². What is the applied force?`,
+          `A sled with ${m} kg mass is pulled at ${a} m/s². Find the force.`,
+          `A football player kicks a ${m} kg ball and it acclerates at ${a} m/s². What is the applied force?`,
+          `A horse pulls a cart of ${m} kg with ${a} m/s². What’s the force?`,
+          `A hammer of ${m} kg strikes with acceleration ${a} m/s². What is the applied force?`,
+          `A machine accelerates ${m} kg at ${a} m/s². What is the force output?`,
+          `A drone accelerates its ${m} kg payload at ${a} m/s². What’s the force?`
+        ];
+        question = choose(contexts);
+        working = `f = m * a = ${m} * ${a}`;
+        answer = `f = ${f} N`;
+
+      } else if (formula === 'a = f / m') {
+        const includeNet = Math.random() < 0.5;
+        const m = getRandom(2, 10);
+        let f = getRandom(20, 100);
+        let net = f;
+        if (includeNet) {
+          const friction = getRandom(5, f - 1);
+          net = +(f - friction).toFixed(2);
+          const a = +(net / m).toFixed(2);
+          const contexts = [
+            `A box with mass ${m} kg is pushed with ${f} N of force, and friction is ${friction} N. What is its acceleration?`,
+            `A person pushes a crate with ${f} N on a surface with ${friction} N of friction. The crate's mass is ${m} kg. Find the acceleration.`,
+            `A hoverboard of mass ${m} kg gets a ${f} N push, but opposed by ${friction} N friction. What is its acceleration?`,
+            `A robot gets ${f} N force but faces ${friction} N resistance. It has a mass of ${m} kg. Acceleration?`,
+            `A cart gets ${f} N force, friction of ${friction} N, and has a mass ${m} kg. What is its acceleration?`,
+            `A sled is pulled with ${f} N against ${friction} N of friction. Its mass is ${m} kg. What is its acceleration?`,
+            `A bulldozer pushes with ${f} N but is resisisted by ${friction} N of friction. If it accelerates at ${m} What is its the mass?`,
+            `A luggage of ${m} kg is pulled with ${f} N, but its wheels apply ${friction} N of friction. What is its acceleration?`,
+            `A toy car experiences ${f} N of pshing force with ${friction} N friction. It has a mass of ${m} kg. What is its acceleration?`,
+            `A horse pulls with a force of ${f} N the cart has ${friction} N of Friction. Cart mass: ${m} kg. What is its acceleration?`
+          ];
+          question = choose(contexts);
+          working = `Net force = ${f} - ${friction} = ${net} N\n→ a = f / m = ${net} / ${m}`;
+          answer = `a = ${a} m/s²`;
+        } else {
+          const a = +(f / m).toFixed(2);
+          const contexts = [
+            `A sled is pulled with ${f} N and has a mass of ${m} kg. What is its acceleration?`,
+            `A machine applies ${f} N to a wheelbarrow of mass ${m} kg. Calculate acceleration.`,
+            `A rope pulls a cart with ${f} N. The cart has a mass of ${m} kg. What is the acceleration?`,
+            `A conveyor applies ${f} N on a ${m} kg object. Acceleration?`,
+            `A drone uses ${f} N thrust for a ${m} kg payload. What's acceleration?`,
+            `A truck pulls a ${m} kg trailer with ${f} N. Find the acceleration.`,
+            `A person pushes ${m} kg sled with ${f} N. Acceleration?`,
+            `A winch pulls a ${m} kg crate with ${f} N. Find acceleration.`,
+            `A fan applies ${f} N to air mass of ${m} kg. Acceleration?`,
+            `A pulley lifts ${m} kg with ${f} N. What's the acceleration?`
+          ];
+          question = choose(contexts);
+          working = `a = f / m = ${f} / ${m}`;
+          answer = `a = ${a} m/s²`;
+        }
+
+      } else if (formula === 'w = m * g') {
+        const m = getRandom(5, 50);
+        const w = +(m * g).toFixed(2);
+        const contexts = [
+          `What is the weight of a ${m} kg toolbox on Earth (g = 10)?`,
+          `Calculate the weight of a ${m} kg astronaut suit.`,
+          `Find the weight of a ${m} kg watermelon on Earth.`,
+          `A ${m} kg suitcase is lifted on Earth. What’s its weight?`,
+          `Determine the weight of a ${m} kg car battery.`,
+          `A ${m} kg boulder sits on Earth. Find its weight.`,
+          `A ${m} kg bag of flour is on a shelf. Calculate its weight.`,
+          `What's the Earth weight of a ${m} kg metal block?`,
+          `Find the weight of a ${m} kg generator.`,
+          `What is the gravitational weight of a ${m} kg steel rod?`
+        ];
+        question = choose(contexts);
+        working = `w = m * g = ${m} * 10`;
+        answer = `w = ${w} N`;
+
+      } else if (formula === 'm = w / g') {
+        const w = getRandom(100, 500);
+        const m = +(w / g).toFixed(2);
+        const contexts = [
+          `A rock weighs ${w} N on Earth. What is its mass?`,
+          `Find the mass of an object weighing ${w} N (g = 10).`,
+          `What is the mass of a pumpkin with a weight of ${w} N on Earth?`,
+          `A hammer weighs ${w} N. What’s the mass?`,
+          `A tool set weighs ${w} N. Find the mass.`,
+          `A TV weighs ${w} N. What is its mass?`,
+          `Calculate the mass of a generator weighing ${w} N.`,
+          `A suitcase has a weight of ${w} N. What's the mass?`,
+          `An appliance weighs ${w} N. Find its mass.`,
+          `An equipment weighs ${w} N. What is its mass in kg?`
+        ];
+        question = choose(contexts);
+        working = `m = w / g = ${w} / 10`;
+        answer = `m = ${m} kg`;
+      }
+
+      current = { question, working, answer };
+      document.getElementById('question').innerText = question;
+    }
+
+    function showAnswer() {
+      document.getElementById('working').innerText = current.working;
+      document.getElementById('answer').innerText = current.answer;
+      document.getElementById('working').classList.remove('hidden');
+      document.getElementById('answer').classList.remove('hidden');
+    }
+  </script>
+</body>
+</html>
