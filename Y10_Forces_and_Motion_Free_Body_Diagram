@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Free Body Diagram Quiz</title>
+  <style>
+body {
+  font-family: Helvetica, sans-serif;
+  padding: 2em;
+  background-color: #f5f5f5;
+  text-align: center;
+}
+
+.card {
+  background: white;
+  padding: 2em;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  max-width: 700px;
+  margin: auto;
+}
+
+.diagram {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 30px auto;
+}
+
+.box {
+  width: 40px;
+  height: 40px;
+  background-color: #999;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
+  border-radius: 6px;
+}
+
+.shaft {
+  position: absolute;
+  background-color: #007bff;
+  z-index: 2;
+}
+
+.arrow {
+  position: absolute;
+  width: 0;
+  height: 0;
+  z-index: 3;
+}
+
+.arrow.left::after {
+  content: "";
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-right: 12px solid #007bff;
+  position: absolute;
+  left: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.arrow.right::after {
+  content: "";
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 12px solid #007bff;
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.arrow.up::after {
+  content: "";
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 12px solid #007bff;
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.arrow.down::after {
+  content: "";
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 12px solid #007bff;
+  position: absolute;
+  bottom: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.force-label {
+  position: absolute;
+  font-weight: bold;
+  color: #333;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  transform: translate(-50%, -50%);
+  z-index: 4;
+}
+
+input[type="text"] {
+  padding: 8px;
+  font-size: 1rem;
+  width: 160px;
+  margin-top: 1em;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+button {
+  margin-top: 1em;
+  padding: 0.8em 1.6em;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: #007bff;
+  color: white;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+#feedback {
+  margin-top: 1em;
+  font-weight: bold;
+}
+
+/* Flexbox for the button and tally alignment */
+.tally-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px; /* Space between button and tally */
+  margin-top: 1em;
+}
+
+#completedTally {
+  font-size: 1rem;
+  color: #333;
+}
+
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Free Body Diagram</h2>
+    <div class="diagram">
+      <div class="box"></div>
+
+      <!-- Arrow shafts -->
+      <div class="shaft" id="shaftLeft"></div>
+      <div class="shaft" id="shaftRight"></div>
+      <div class="shaft" id="shaftUp"></div>
+      <div class="shaft" id="shaftDown"></div>
+
+      <!-- Arrow heads -->
+      <div class="arrow left" id="arrowLeft"></div>
+      <div class="arrow right" id="arrowRight"></div>
+      <div class="arrow up" id="arrowUp"></div>
+      <div class="arrow down" id="arrowDown"></div>
+
+      <!-- Force labels -->
+      <div class="force-label" id="labelLeft"></div>
+      <div class="force-label" id="labelRight"></div>
+      <div class="force-label" id="labelUp"></div>
+      <div class="force-label" id="labelDown"></div>
+    </div>
+
+    <div>
+      <label>Net Force (e.g., "5 right", "3 up"):</label><br>
+      <input type="text" id="answerInput" />
+      <br>
+      <button onclick="checkAnswer()">Check Answer</button>
+    </div>
+
+    <div id="feedback"></div>
+
+    <!-- Tally Display -->
+    <div class="tally-container">
+      <div id="completedTally">Completed: 0</div>
+    </div>
+  </div>
+
+  <script>
+let currentForces = {};
+let completedCount = 0; // Initialize the tally
+
+function getRandomForce() {
+  return Math.floor(Math.random() * 11) + 1; // Forces should be positive (1 to 10)
+}
+
+function renderForces() {
+  // Randomly decide whether to make the net force vertical or horizontal
+  const isVertical = Math.random() < 0.5;  // 50% chance to make it vertical
+
+  // Set forces such that one axis has a net force of zero and the other has a net force greater than zero
+  if (isVertical) {
+    // Vertical axis (up/down) will have forces that sum to zero
+    const upForce = getRandomForce();
+    const downForce = upForce;  // Ensure net vertical force is zero
+
+    // The horizontal axis will have forces that don't cancel each other
+    const leftForce = getRandomForce();
+    const rightForce = getRandomForce();
+
+    currentForces = {
+      left: leftForce,
+      right: rightForce,
+      up: upForce,
+      down: downForce
+    };
+  } else {
+    // Horizontal axis (left/right) will have forces that sum to zero
+    const leftForce = getRandomForce();
+    const rightForce = leftForce;  // Ensure net horizontal force is zero
+
+    // The vertical axis will have forces that don't cancel each other
+    const upForce = getRandomForce();
+    const downForce = getRandomForce();
+
+    currentForces = {
+      left: leftForce,
+      right: rightForce,
+      up: upForce,
+      down: downForce
+    };
+  }
+
+  const scale = 10;
+  const centerX = 100;
+  const centerY = 100;
+
+  // Shafts
+  document.getElementById("shaftLeft").style.cssText =
+    `height: 6px; width: ${currentForces.left * scale}px; top: ${centerY - 3}px; left: ${centerX - currentForces.left * scale}px;`;
+  document.getElementById("shaftRight").style.cssText =
+    `height: 6px; width: ${currentForces.right * scale}px; top: ${centerY - 3}px; left: ${centerX}px;`;
+  document.getElementById("shaftUp").style.cssText =
+    `width: 6px; height: ${currentForces.up * scale}px; left: ${centerX - 3}px; top: ${centerY - currentForces.up * scale}px;`;
+  document.getElementById("shaftDown").style.cssText =
+    `width: 6px; height: ${currentForces.down * scale}px; left: ${centerX - 3}px; top: ${centerY}px;`;
+
+  // Arrows
+  document.getElementById("arrowLeft").style.left = `${centerX - currentForces.left * scale}px`;
+  document.getElementById("arrowLeft").style.top = `${centerY}px`;
+
+  document.getElementById("arrowRight").style.left = `${centerX + currentForces.right * scale}px`;
+  document.getElementById("arrowRight").style.top = `${centerY}px`;
+
+  document.getElementById("arrowUp").style.left = `${centerX}px`;
+  document.getElementById("arrowUp").style.top = `${centerY - currentForces.up * scale}px`;
+
+  document.getElementById("arrowDown").style.left = `${centerX}px`;
+  document.getElementById("arrowDown").style.top = `${centerY + currentForces.down * scale}px`;
+
+  // Labels behind arrows with "N" added
+  document.getElementById("labelLeft").textContent = `${currentForces.left} N`;
+  document.getElementById("labelLeft").style.left = `${centerX - currentForces.left * scale - 18}px`;
+  document.getElementById("labelLeft").style.top = `${centerY}px`;
+
+  document.getElementById("labelRight").textContent = `${currentForces.right} N`;
+  document.getElementById("labelRight").style.left = `${centerX + currentForces.right * scale + 18}px`;
+  document.getElementById("labelRight").style.top = `${centerY}px`;
+
+  document.getElementById("labelUp").textContent = `${currentForces.up} N`;
+  document.getElementById("labelUp").style.left = `${centerX}px`;
+  document.getElementById("labelUp").style.top = `${centerY - currentForces.up * scale - 18}px`;
+
+  document.getElementById("labelDown").textContent = `${currentForces.down} N`;
+  document.getElementById("labelDown").style.left = `${centerX}px`;
+  document.getElementById("labelDown").style.top = `${centerY + currentForces.down * scale + 18}px`;
+
+  // Update the tally
+  document.getElementById("completedTally").textContent = `Completed: ${completedCount}`;
+}
+
+function checkAnswer() {
+  const input = document.getElementById("answerInput").value.trim().toLowerCase();
+  const netX = currentForces.right - currentForces.left;
+  const netY = currentForces.up - currentForces.down;
+
+  let correctAnswer = "";
+  if (netX === 0 && netY === 0) {
+    correctAnswer = "0";
+  } else if (netX !== 0 && netY === 0) {
+    correctAnswer = Math.abs(netX) + (netX > 0 ? " right" : " left");
+  } else if (netY !== 0 && netX === 0) {
+    correctAnswer = Math.abs(netY) + (netY > 0 ? " up" : " down");
+  } else {
+    correctAnswer = `${Math.abs(netX)} ${netX > 0 ? "right" : "left"}, ${Math.abs(netY)} ${netY > 0 ? "up" : "down"}`;
+  }
+
+  if (input === correctAnswer) {
+    document.getElementById("feedback").textContent = "Correct!";
+    document.getElementById("feedback").style.color = "green";
+    completedCount++; // Increment the tally
+    setTimeout(() => {
+      document.getElementById("answerInput").value = "";
+      document.getElementById("feedback").textContent = "";
+      renderForces();
+    }, 1000);
+  } else {
+    document.getElementById("feedback").textContent = "Try again!";
+    document.getElementById("feedback").style.color = "red";
+    document.getElementById("answerInput").value = "";
+  }
+}
+
+renderForces();
+
+</script>
+
+</body>
+</html>
