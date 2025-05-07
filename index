@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Home Page</title>
+<style>
+  body {
+    font-family: Helvetica, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f4f4f4;
+    text-align: center;
+    margin: 0;
+    color: white;
+  }
+
+  .header {
+    width: 100%;
+    height: 20vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+
+  h1 {
+    font-size: 55px;
+    color: black;
+    margin: 0;
+  }
+
+  .container-wrapper {
+    display: flex;
+    justify-content: space-around;
+    align-items: flex-start;
+    width: 100%;
+    padding: 0 5%;
+    flex-wrap: wrap;
+  }
+
+  .container {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    width: 20%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 0;
+  }
+
+  .container h2 {
+    font-size: 40px;
+    margin-bottom: 5px;
+    color: black;
+  }
+
+  button {
+    padding: 15px 30px;
+    font-size: 18px;
+    cursor: pointer;
+    margin-bottom: 10px;
+    border: none;
+    border-radius: 5px;
+    background: #007bff;
+    color: white;
+    transition: 0.3s;
+    width: 100%;
+    max-width: 280px;
+  }
+
+  button:hover {
+    background: #00c3ff;
+    transform: scale(1.05);
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .crest-image {
+    flex-basis: 35%;
+    max-width: 500px;
+    height: auto;
+    margin-top: 0;
+  }
+
+  .button-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  /* New styles for wider container and 2-column Genetics layout */
+  .container-wide {
+    width: 60%;
+    align-items: stretch;
+  }
+
+  .column-wrapper {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .column h3 {
+    font-size: 24px;
+    color: black;
+    margin-bottom: 10px;
+  }
+   .centered-button {
+    display: block;
+    margin: 20px auto; /* Centers the button horizontally */
+    padding: 15px 30px;
+    font-size: 18px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: 0.3s;
+  }
+
+  .centered-button:hover {
+    background-color: #00c3ff;
+    transform: scale(1.05);
+</style>
+
+</head>
+<body>
+  <div class="header">
+    <h1>St Peters Junior Science</h1>
+  </div>
+
+  <div class="container-wrapper" id="topic-buttons">
+    <div class="container" id="y9-science">
+      <h2>Y9 Science</h2>
+      <button onclick="location.href='Y9_Science_Glossary_Quizes.html'">Glossary Quizzes</button>
+      <button onclick="showActivities('matter')">Topic 1: Matter</button>
+      <button onclick="showActivities('energy')">Topic 2: Energy</button>
+      <button onclick="showActivities('carbonchemistryandclimatechange')">Topic 3: Carbon Chemisty and Climate Change</button>
+      <button onclick="showActivities('matariki')">Topic 4: Matariki</button>
+      <button onclick="showActivities('microorganisms')">Topic 5: Microorganisms</button>
+      <button onclick="showActivities('waves')">Topic 6: Waves</button>
+      <button onclick="showActivities('ecologyofmaungatautari')">Topic 7: Ecology of Maungatautari</button>
+    </div>
+
+    <img src="Crest.png" alt="School Crest" class="crest-image" />
+
+    <div class="container" id="y10-science">
+      <h2>Y10 Science</h2>
+      <button onclick="location.href='Y10_Science_Glossary_Quizes.html'">Glossary Quizzes</button>
+      <button onclick="showActivities('periodicTable')">Topic 1: Atoms, Ions & Periodic Table</button>
+      <button onclick="showActivities('forcesAndMotion')">Topic 2: Forces and Motion</button>
+      <button onclick="showActivities('genetics')">Topic 3: Genetics</button>
+      <button onclick="showActivities('acidsBases')">Topic 4: Acids and Bases</button>
+      <button onclick="showActivities('electricity')">Topic 5: Electricity</button>
+      <button onclick="showActivities('humanBody')">Topic 6: Human Body</button>
+      <button onclick="showActivities('earthScience')">Topic 7: Earth Science</button>
+    </div>
+  </div>
+
+ <!-- Topic Sections -->
+<div id="forcesAndMotion" class="container container-wide hidden">
+  <h2>Forces and Motion</h2>
+  <div class="column-wrapper">
+    <div class="column">
+      <h3>Resources</h3>
+      <button onclick="location.href='Y10_Forces_And_Motion_Glossary.html'">Glossary</button> 
+      <button onclick="location.href='Y10_Forces_And_Motion_Learning_Outcomes.html'">Learning Outcomes</button>  
+    </div>
+    <img src="Y10_Forces_and_Motion_Crest.png" alt="Genetics Helix GIF" style="max-height: 300px; margin: 0 20px;" />
+    <div class="column">
+      <h3>Practice</h3>
+      <button onclick="location.href='Y10_Forces_and_Motion_Cloze.html'">Forces and Motion Cloze</button>
+      <button onclick="location.href='Y10_Forces_and_Motion_Formula_Generator.html'">Forces and Motion Question Generator</button>
+      <button onclick="location.href='Y10_Forces_and_Motion_Free_Body_Diagram.html'">Forces and Motion Free Body Diagrams</button>
+      <button onclick="location.href='Y10_Forces_and_Motion_Calculation_Quiz.html'">Force, Weight, Acceleration and Speed Calculations</button>
+      <button onclick="location.href='Y10_Forces_and_Motion_GPE=mgh_Calculation_Generator.html'">GPE=mgh Calculations</button>
+      <button onclick="location.href='Y10_Forces_and_Motion_Ek=½mv²_Generator.html'">Ek=½mv² Calculations</button>
+      <button onclick="location.href='Y10_Forces_and_Motion_Rearanging_Equations.html'">Rearanging Equations</button>
+    </div>
+  </div>
+  <button class="centered-button" onclick="goBack()">⬅ Back to Topics</button>
+</div>
+
+
+ <div id="periodicTable" class="container container-wide hidden">
+  <h2>Atoms, Ions & Periodic Table</h2>
+  <div class="column-wrapper">
+    <div class="column">
+      <h3>Resources</h3>
+    </div>
+        <img src="Y10_Atoms_and_Ions_Crest.png" alt="Genetics Helix GIF" style="max-height: 300px; margin: 0 20px;" />
+    <div class="column">
+      <h3>Practice</h3>
+      <button onclick="location.href='Y10_Acids_and_Bases_Element_Symbol_Quiz.html'">Element Symbol Quiz</button>
+      <button onclick="location.href='Y10_Atoms_and_Ions_Periodic_Table_Cloze.html'">Periodic Table Cloze</button>
+      <button onclick="location.href='Y10_Atoms_and_Ions_Atoms_Subatomic_Particels_Quiz.html'">Atoms Subatomic Particles & Electron Configuration</button>
+      <button onclick="location.href='Y10_Atoms_and_Ions_Atoms_and_Ions_Subatomic_Particels_Quiz.html'">Atoms and Ions Subatomic Particles & Electron Configuration</button>
+      <button onclick="location.href='Y10_Atoms_and_Ions_Chemical_Equation_Balancing.html'">Chemical Equation Balancing</button>
+    </div>
+  </div>
+  <button class="centered-button" onclick="goBack()">⬅ Back to Topics</button>
+</div>
+
+<div id="genetics" class="container container-wide hidden">
+  <h2>Genetics</h2>
+  <div class="column-wrapper" style="align-items: top;">
+    <div class="column">
+      <h3>Resources</h3>
+      <button onclick="location.href='Y10_Generics_Glossary.html.html'">Glossary</button>
+      <button onclick="location.href='Y10_Genetics_Learning_Outcomes.html'">Learning Outcomes</button>
+      <button onclick="location.href='Y10_Genetics_PowerPoints.html'">Genetics PowerPoints</button>
+    </div>
+        <img src="Y10_Genetics_Crest.png" alt="Genetics Helix GIF" style="max-height: 300px; margin: 0 20px;" />
+    <div class="column">
+      <h3>Practice</h3>
+      <button onclick="location.href='Y10_Genetics_Cloze.html'">Genetics Cloze</button>
+      <button onclick="location.href='Y10_Genetics_Cryptic_Word_Find.html'">Genetics Word Find</button>
+      <button onclick="location.href='Y10_Genetics_DNA_Structure_Diagram_Quiz.html'">DNA Structure Diagram Quiz</button>  
+      <button onclick="location.href='Y10_Genetics_Punnett_Square_Challenge.html'">Punnett Square Quiz - Simple</button>  
+      <button onclick="location.href='Y10_Genetics_Punnett_Square_Challenge_with_Ratios.html'">Punnett Square Quiz - Moderate</button>  
+      <button onclick="location.href='Y10_Genetics_Punnett_Square_Challenge_Difficult.html'">Punnett Square Quiz - Complex</button>    
+    </div>
+  </div>
+  <button class="centered-button" onclick="goBack()">⬅ Back to Topics</button>
+</div>
+
+
+
+<div id="electricity" class="container container-wide hidden">
+  <h2>Electricity</h2>
+  <div class="column-wrapper">
+    <div class="column">
+      <h3>Resources</h3>     
+    </div>
+      <img src="Y10_Electricity_Crest.png" alt="Genetics Helix GIF" style="max-height:300px; margin: 0 20px;" />
+    <div class="column">
+      <h3>Practice</h3>
+      <button onclick="location.href='Y10_Electricity_Cloze.html'">Electricity Cloze</button>
+      <button onclick="location.href='Y10_Electricity_Circuit_Component_Quiz.html'">Circuit Component Quiz</button>
+      <button onclick="location.href='Y10_Electricity_Series_Voltage_Current.html'">Voltage & Current in Series Quiz</button> 
+      <button onclick="location.href='Y10_Electricity_Parallel_Voltage_Current.html'">Voltage & Current in Parallel Quiz</button> 
+      <button onclick="location.href='Y10_Electricity_Ohms_Law_Challenge.html'">Ohm's Law Quiz</button>  
+    </div>
+  </div>
+  <button class="centered-button" onclick="goBack()">⬅ Back to Topics</button>
+</div>
+
+
+<div id="acidsBases" class="container container-wide hidden">
+  <h2>Acids and Bases</h2>
+  <div class="column-wrapper">
+    <div class="column">
+      <h3>Resources</h3>
+    </div>
+      <img src="Y10_Acids_and_Bases_Crest.png" style="max-height:300px; margin: 0 20px;" />
+    <div class="column">
+      <h3>Practice</h3>
+      <button onclick="location.href='Y10_Acids_and_Bases_Cloze.html'">Acids and Bases Cloze</button>
+      <button onclick="location.href='Y10_Acids_and_Bases_Element_Symbol_Quiz.html'">Element Symbol Quiz</button>
+      <button onclick="location.href='Y10_Acid_and_Base_Acid_+_Base_Word_Equations.html'">Acids and Base Word Equations</button>
+      <button onclick="location.href='Y10_Acids_and Bases_Time_Crunch.html'">Acids and Bases Formulas Time Crunch</button>
+      <button onclick="location.href='Y10_Acids_and Bases_Time_Crunch_Word_Equations.html'">Acids and Bases Word Equations Time Crunch</button>
+    </div>
+  </div>
+  <button class="centered-button" onclick="goBack()">⬅ Back to Topics</button>
+</div>
+
+
+<div id="humanBody" class="container container-wide hidden">
+  <h2>Human Body</h2>
+  <div class="column-wrapper">
+    <div class="column">
+      <h3>Resources</h3>
+    </div>
+      <img src="Y10_Human_Body_Crest.png" alt="Genetics Helix GIF" style="max-height: 300px; margin: 0 20px;" />  
+    <div class="column">
+      <h3>Practice</h3>
+      <button onclick="location.href='Y10_Human_Body_Cloze.html'">Human Body Cloze</button>
+      <button onclick="location.href='Y10_Human_Body_Digesige_System_Image_Quiz.html'">Digestive System Diagram Quiz</button>
+      <button onclick="location.href='Y10_Human Body_Time_Crunch_Digestive_System_Match.html'">Time Crunch Digestive System Match</button>
+    </div>
+  </div>
+  <button class="centered-button" onclick="goBack()">⬅ Back to Topics</button>
+</div>
+
+
+<div id="earthScience" class="container container-wide hidden">
+  <h2>Earth Science</h2>
+  <div class="column-wrapper">
+    <div class="column">
+      <h3>Resources</h3>
+    </div>
+      <img src="Y10_Earth_Science_Crest.png" alt="Genetics Helix GIF" style="max-height: 300px; margin: 0 20px;" />
+    <div class="column">
+      <h3>Practice</h3>
+      <button onclick="location.href='Y10_Earth_Science_Cloze.html'">Earth Science Cloze</button>
+    </div>
+  </div>
+  <button class="centered-button" onclick="goBack()">⬅ Back to Topics</button>
+</div>
+
+
+
+<div id="matter" class="container container-wide hidden">
+  <h2>Matter (incomplete)</h2>
+  <div class="column-wrapper">
+    <div class="column">
+      <h3>Resources</h3>
+      
+    </div>
+      <img src="Y9_Matter_Crest.png" alt="Genetics Helix GIF" style="max-height: 300px; margin: 0 20px;" />
+    <div class="column">
+      <h3>Practice</h3>
+ 
+    </div>
+  </div>
+  <button class="centered-button" onclick="goBack()">⬅ Back to Topics</button>
+</div>
+
+
+<div id="energy" class="container container-wide hidden">
+  <h2>Energy (incomplete)</h2>
+  <div class="column-wrapper">
+    <div class="column">
+      <h3>Resources</h3>
+      
+    </div>
+      <img src="Y9_Energy_Crest.png" alt="Genetics Helix GIF" style="max-height: 300px; margin: 0 20px;" />
+    <div class="column">
+      <h3>Practice</h3>
+ 
+    </div>
+  </div>
+  <button class="centered-button" onclick="goBack()">⬅ Back to Topics</button>
+</div>
+
+
+
+<div id="carbonchemistryandclimatechange" class="container container-wide hidden">
+  <h2>Carbon Chemistry and Climate (incomplete)</h2>
+  <div class="column-wrapper">
+    <div class="column">
+      <h3>Resources</h3>
+      .html
+      <button onclick="location.href='Y9_Climate_and_Carbon_Glossary.html.html'"> Glossary</button>
+      <button onclick="location.href='Y9_Climate_and_Carbon_Learning_Outcomes.html.html'"> Learning Outcomes</button>
+    </div>
+      <img src="Y9_Carbon_Chemistry_and_Climate_Change_Crest.png" alt="Genetics Helix GIF" style="max-height: 300px; margin: 0 20px;" />
+    <div class="column">
+      <h3>Practice</h3>
+      <button onclick="location.href='Y9_Climate_and_Carbon_Cloze.html.html'"> Cloze</button>
+      <button onclick="location.href='Y9_Climarte_and_Carbon_Kahikatea_Calculator.html.html'"> Kahikatea Calculator</button>
+ 
+    </div>
+  </div>
+  <button class="centered-button" onclick="goBack()">⬅ Back to Topics</button>
+</div>
+
+
+
+<div id="matariki" class="container container-wide hidden">
+  <h2>Matariki (incomplete)</h2>
+  <div class="column-wrapper">
+    <div class="column">
+      <h3>Resources</h3>
+      
+    </div>
+      <img src="Y9_Matariki_Crest.png" alt="Genetics Helix GIF" style="max-height: 300px; margin: 0 20px;" />
+    <div class="column">
+      <h3>Practice</h3>
+ 
+    </div>
+  </div>
+  <button class="centered-button" onclick="goBack()">⬅ Back to Topics</button>
+</div>
+
+
+
+<div id="microorganisms" class="container container-wide hidden">
+  <h2>Microorganisms (incomplete)</h2>
+  <div class="column-wrapper">
+    <div class="column">
+      <h3>Resources</h3>
+      
+    </div>
+      <img src="Y9_Microorganisms_Crest.png" alt="Genetics Helix GIF" style="max-height: 300px; margin: 0 20px;" />
+    <div class="column">
+      <h3>Practice</h3>
+ 
+    </div>
+  </div>
+  <button class="centered-button" onclick="goBack()">⬅ Back to Topics</button>
+</div>
+
+
+
+<div id="waves" class="container container-wide hidden">
+  <h2>Waves (incomplete)</h2>
+  <div class="column-wrapper">
+    <div class="column">
+      <h3>Resources</h3>
+      
+    </div>
+      <img src="Y9_Waves_Crest.png" alt="Genetics Helix GIF" style="max-height: 300px; margin: 0 20px;" />
+    <div class="column">
+      <h3>Practice</h3>
+ 
+    </div>
+  </div>
+  <button class="centered-button" onclick="goBack()">⬅ Back to Topics</button>
+</div>
+
+
+
+<div id="ecologyofmaungatautari" class="container container-wide hidden">
+  <h2>Ecology of Maungatautari (incomplete)</h2>
+  <div class="column-wrapper">
+    <div class="column">
+      <h3>Resources</h3>
+      
+    </div>
+      <img src="Y9_Ecology_Crest.png" alt="Genetics Helix GIF" style="max-height: 300px; margin: 0 20px;" />
+    <div class="column">
+      <h3>Practice</h3>
+ 
+    </div>
+  </div>
+  <button class="centered-button" onclick="goBack()">⬅ Back to Topics</button>
+</div>
+
+
+
+<script>
+  function showActivities(topic) {
+    const allTopics = [
+      'forcesAndMotion', 'periodicTable', 'genetics', 'electricity',
+      'acidsBases', 'humanBody', 'earthScience', 'matter', 'energy', 'carbonchemistryandclimatechange', 'matariki',
+      'microorganisms', 'ecologyofmaungatautari', 'waves'
+    ];
+    allTopics.forEach(t => document.getElementById(t).classList.add('hidden'));
+    document.getElementById('topic-buttons').classList.add('hidden');
+    document.getElementById(topic).classList.remove('hidden');
+  }
+
+  function goBack() {
+    const allTopics = [
+      'forcesAndMotion', 'periodicTable', 'genetics', 'electricity',
+      'acidsBases', 'humanBody', 'earthScience', 'matter', 'energy', 'carbonchemistryandclimatechange', 'matariki',
+      'microorganisms', 'ecologyofmaungatautari', 'waves'
+    ];
+    allTopics.forEach(t => document.getElementById(t).classList.add('hidden'));
+    document.getElementById('topic-buttons').classList.remove('hidden');
+  }
+</script>
+
+
+</body>
+</html>
