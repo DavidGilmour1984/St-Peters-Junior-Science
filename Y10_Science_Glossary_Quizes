@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Definition Quiz</title>
+  <style>
+  body {
+    font-family: Helvetica, sans-serif;
+    margin: 0;
+    padding: 2em;
+    background-color: #f0f2f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .card {
+    background: #fff;
+    padding: 2.5em;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 640px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  }
+
+  h2 {
+    margin-bottom: 1.5em;
+    font-size: 2rem;
+    color: #333;
+  }
+
+  .select-topic {
+    display: block;
+    width: 100%;
+    padding: 1em;
+    margin: 0.5em 0;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(135deg, #4a90e2, #007aff);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+  }
+
+  .select-topic:hover {
+    background: linear-gradient(135deg, #3b7bd8, #0066cc);
+    transform: scale(1.02);
+  }
+
+.option {
+  /* remove display: block */
+  margin: 0.5em;
+  padding: 0.9em;
+  background: #e0e0e0;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+
+  .option:hover {
+    background: #d0d0d0;
+    transform: scale(1.01);
+  }
+
+  .correct {
+    background: #b4f0b4 !important;
+    color: #104210;
+    font-weight: bold;
+  }
+
+  .wrong {
+    background: #f7b4b4 !important;
+    color: #7a1212;
+    font-weight: bold;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  #feedback {
+    margin-top: 1em;
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+  <div class="card" id="start-screen">
+    <h2>Y10 Science Glossary Quizzes</h2>
+    <button class="select-topic" onclick="startQuiz('periodictable')">Topic 1: Periodic Table</button>
+    <button class="select-topic" onclick="startQuiz('forcesandmotion')">Topic 2: Forces and Motion</button>
+    <button class="select-topic" onclick="startQuiz('genetics')">Topic 3: Genetics</button>
+    <button class="select-topic" onclick="startQuiz('acidsandbases')">Topic 4: Acids and Bases</button>
+    <button class="select-topic" onclick="startQuiz('electricity')">Topic 5: Electricity</button>
+    <button class="select-topic" onclick="startQuiz('humanbody')">Topic 6: Human Body</button>
+    <button class="select-topic" onclick="startQuiz('earthscience')">Topic 7: Earth Science</button>
+  </div>
+
+  <div class="card hidden" id="quiz-screen">
+    <h2 id="definition">Loading...</h2>
+    <div id="options"></div>
+    <p id="feedback"></p>
+  </div>
+
+
+  <script>
+    const data = {
+      periodictable: {
+  "Element": "A substance made of one type of atom only.",
+  "Atom": "The smallest particle of an element that can exist.",
+  "Ion": "An atom that has gained or lost electrons, resulting in a net charge.",
+  "Molecule": "Two or more atoms chemically bonded together.",
+  "Compound": "Two or more ions chemically bonded together.",
+  "Electron": "A negatively charged sub-atomic particle.",
+  "Neutron": "A neutral sub-atomic particle.",
+  "Proton": "A positively charged sub-atomic particle.",
+  "Nucleus": "The center of an atom (or ion), containing protons and neutrons.",
+  "Energy level": "Regions around a nucleus where electrons are found.",
+  "Atomic number": "The number of protons in the nucleus of an atom.",
+  "Mass number": "The number of protons plus neutrons in the nucleus of an atom.",
+  "Group": "A column in the periodic table; all elements in the same group have the same number of valence electrons.",
+  "Period": "A row in the periodic table; all elements in the same period have valence electrons in the same energy level.",
+  "Electron configuration": "A simplification of where electrons are found in an atom, e.g., 2,8,8,18.",
+  "Valence level": "The outermost occupied energy level of an atom.",
+  "Valence electrons": "Electrons found in the valence level.",
+  "Cation": "A positively charged ion (has more protons than electrons).",
+  "Anion": "A negatively charged ion (has more electrons than protons).",
+  "Reactant": "Substances on the left side of the chemical equation, which are used up in a reaction.",
+  "Product": "Substances on the right side of the chemical equation, which are formed in a reaction.",
+  "Chemical equation (word)": "A representation of reactants and products in a reaction written in words, e.g., Hydrogen + Oxygen → Water.",
+  "Electrically neutral": "The state when charged particles are equal and opposite, such as protons and electrons or cations and anions, canceling out their charges."
+},
+      forcesandmotion: {
+    "Force": "A push or pull that can change the motion or shape of an object. Measured in newtons (N).",
+    "Mass": "The amount of matter in an object, measured in kilograms (kg).",
+    "Weight": "The force of gravity on an object. Calculated with W = mg.",
+    "W = mg": "Weight equals mass times gravitational field strength (g).",
+    "Thrust": "A force that pushes an object forward.",
+    "Friction": "A force that opposes motion between two surfaces in contact.",
+    "Support force": "Also known as the normal force; it acts perpendicular to a surface to support an object.",
+    "Balanced forces": "Forces that are equal in size and opposite in direction, causing no change in motion.",
+    "Unbalanced forces": "Forces that cause a change in motion, such as starting, stopping or changing direction.",
+    "Terminal velocity": "The maximum speed an object can reach when the force of gravity is balanced by air resistance.",
+    "Newton’s First Law": "An object remains at rest or in uniform motion unless acted on by an unbalanced force.",
+    "Newton’s Second Law": "F = ma – Force equals mass times acceleration.",
+    "F = ma": "Force (N) = mass (kg) × acceleration (m/s²).",
+    "a = Δv/Δt": "Acceleration equals change in velocity over time.",
+    "v = Δd/Δt": "Speed equals change in distance over time.",
+    "Speed": "The distance travelled per unit time. Usually measured in m/s.",
+    "Acceleration": "The rate of change of velocity over time. Measured in m/s².",
+    "Friction reduction": "Can be done with lubricants, smoother surfaces, or air resistance reduction.",
+    "Force diagram": "A diagram showing all the forces acting on an object using arrows.",
+    "Net force": "The sum of all forces acting on an object. Determines the object's motion.",
+    "Distance-time graph": "Graph showing how far an object travels over time. Slope = speed.",
+    "Speed-time graph": "Graph showing how an object's speed changes over time. Slope = acceleration.",
+},
+       genetics: {
+    "DNA": "Deoxyribonucleic acid, a molecule that carries genetic instructions in living organisms.",
+    "Nucleotide": "The basic unit of DNA, made of a sugar, a phosphate, and a base.",
+    "Bases and base pairing": "DNA bases pair A with T and C with G.",
+    "Gene": "A section of DNA that codes for a specific protein or trait.",
+    "Allele": "Different forms of the same gene.",
+    "Dominant": "An allele that shows its effect even if only one copy is present.",
+    "Recessive": "An allele that only shows its effect if both copies are the same.",
+    "Chromosome": "A thread-like structure made of DNA that carries genes.",
+    "Genotype": "The combination of alleles an organism has (e.g. Bb, BB, or bb).",
+    "Phenotype": "The physical expression of a genotype (e.g. brown eyes).",
+    "Homozygous dominant": "Having two copies of the dominant allele (e.g. BB).",
+    "Homozygous recessive": "Having two copies of the recessive allele (e.g. bb).",
+    "Heterozygous": "Having one dominant and one recessive allele (e.g. Bb).",
+    "Punnett Square": "A diagram used to predict the genotypes and phenotypes of offspring.",
+    "Genetic variation": "Differences in DNA among individuals of a species.",
+    "Genetic diversity": "The total number of genetic characteristics in a population.",
+    "Mutation": "A change in the DNA base sequence.",
+    "Mutagen": "Something that causes a mutation (e.g. radiation or chemicals).",
+    "Structural adaptation": "A physical feature that helps an organism survive.",
+    "Behavioural adaptation": "A behavior that helps an organism survive (e.g. migration).",
+    "Physiological adaptation": "A body process that helps survival (e.g. venom production).",
+    "Adaptation": "A trait that increases an organism’s chances of survival.",
+    "Inheritance": "The passing of traits from parents to offspring through genes."
+  },
+      acidsandbases: {
+  "Acid": "A substance that releases hydrogen ions (H⁺) when dissolved in water.",
+    "H₃O⁺": "Hydronium ion, formed when H⁺ reacts with water — more accurate than just H⁺.",
+    "Hydrochloric acid": "HCl – a strong laboratory acid.",
+    "Sulfuric acid": "H₂SO₄ – a strong laboratory acid.",
+    "Nitric acid": "HNO₃ – a strong laboratory acid.",
+    "Vinegar": "A household acid containing ethanoic (acetic) acid.",
+    "Citric acid": "A weak organic acid found in citrus fruits.",
+    "Strength of acid": "Related to the number of H⁺ ions in solution; stronger acids have more H⁺ ions and a lower pH.",
+    "pH scale": "A scale from 0–14 measuring how acidic or basic a solution is; low pH = acidic, high pH = basic.",
+    "Litmus paper": "An indicator that turns red in acids and blue in bases.",
+    "Universal indicator": "A mixture of indicators that shows a wide range of pH values with different colors.",
+    "Acid + metal": "Produces salt + hydrogen gas.",
+    "Acid + base": "Neutralisation reaction that produces salt + water.",
+    "Acid + carbonate": "Produces salt + water + carbon dioxide.",
+    "Base": "A substance that releases hydroxide ions (OH⁻) when dissolved in water.",
+    "Alkali": "A base that dissolves in water to form hydroxide ions (OH⁻).",
+    "Sodium hydroxide": "NaOH – a strong alkali.",
+    "Calcium carbonate": "CaCO₃ – a common base and component of chalk/limestone.",
+    "Potassium hydroxide": "KOH – a strong base.",
+    "Metal hydroxides": "All are bases.",
+    "Metal carbonates": "All are bases.",
+    "Indicator": "A substance that changes color in the presence of an acid or a base.",
+    "Neutralisation reaction": "A reaction between an acid and a base to produce water (and a salt).",
+    "Effect of pH in neutralisation": "As neutralisation occurs, pH moves toward 7 and the indicator color changes.",
+    "Balancing ions in neutralisation": "H⁺ from acid reacts with OH⁻ from base to form H₂O.",
+    "Base + acid → salt + water": "General formula for neutralisation reactions.",
+    "Metal + acid → salt + hydrogen": "General reaction for acids with metals.",
+    "Metal carbonate + acid → salt + water + carbon dioxide": "General reaction for acids with carbonates.",
+    "Concentrated vs dilute": "Concentrated = more particles in same volume; dilute = fewer particles.",
+    "Effect of acid concentration": "More concentrated acids react faster due to more frequent collisions.",
+    "Collision theory": "Explains how increasing concentration increases rate of reaction.",
+    "Pop test": "Test for hydrogen gas",
+    "Limewater test": "Turns milky when carbon dioxide gas is bubbled through it."
+},
+electricity: {
+    "Charge": "A property of matter that can be positive or negative. Electrons carry negative charge; protons carry positive.",
+    "Positively charged": "An object with more protons than electrons.",
+    "Negatively charged": "An object with more electrons than protons.",
+    "Friction": "The rubbing of two objects together, which can transfer electrons and cause charging.",
+    "Electrons": "Negatively charged particles that orbit the nucleus of an atom.",
+    "Repel": "A force that pushes objects apart (like charges repel).",
+    "Attract": "A force that pulls objects together (opposite charges attract).",
+    "Insulator": "A material that does not allow electrons to move freely. Examples: air, plastic, rubber, wood, glass.",
+    "Conductor": "A material that allows electrons to move easily. All metals are conductors, especially copper and gold.",
+    "Discharge": "The loss of electric charge, either slowly or suddenly (e.g. spark, lightning).",
+    "Circuit diagram": "A drawing that shows how components in a circuit are connected using standard symbols.",
+    "Electrical component": "Any device or part connected into an electrical circuit.",
+    "Cell/Battery": "A cell provides energy for a circuit. A battery is a group of cells joined together.",
+    "Switch": "A component that can open or close a circuit to turn it on or off.",
+    "Bulb/lamp": "A device that glows when current passes through it, converting electrical energy into light and some heat.",
+    "Resistor": "A component that limits the flow of current in a circuit.",
+    "Variable resistor": "A resistor that can be adjusted to change the resistance in a circuit.",
+    "Resistance": "The opposition to the flow of electric current, resulting in lower current.",
+    "Series": "A circuit where all components share the same current.",
+    "Parallel": "A circuit where current splits and flows through multiple pathways.",
+    "Short circuit": "A low-resistance path that bypasses other components, causing high current flow.",
+    "Current (Amperes A)": "Symbol I. The flow of charge in a circuit, measured in Amperes (A).",
+    "Voltage (Volts V)": "Symbol V. The energy gained or lost by electrons as they pass through a component. Measured in Volts (V).",
+    "Ammeter": "A device that measures current. It must be connected in series.",
+    "Voltmeter": "A device that measures voltage. It must be connected in parallel.",
+    "Power": "The rate of energy use per second. Measured in Watts (Joules per second).",
+    "Energy transformation": "The change of energy from one form to another (e.g. electrical to light)."
+},
+humanbody: {
+    "Aerobic respiration": "A reaction that uses oxygen to release the energy stored in glucose molecules in living things.",
+    "Reactant": "A chemical present at the start of a reaction.",
+    "Product": "A chemical present at the end of a reaction.",
+    "Bond": "The energy used to hold two atoms together.",
+    "Molecule": "A particle made of two or more atoms bonded together.",
+    "Digestion": "A process that breaks down the large molecules in food to their smaller parts.",
+    "Physical digestion": "A process that mechanically breaks down the large molecules in food into their smaller parts, e.g., chewing.",
+    "Chemical digestion": "A process that uses enzymes to break down the large molecules in food into their smaller parts.",
+    "Ingestion": "Putting food into the mouth.",
+    "Absorption": "The movement of molecules from the gut into the bloodstream.",
+    "Surface area": "The area of the outer part or layer of a structure.",
+    "Enzyme": "A type of large molecule that can speed up a reaction in living things, e.g., digestive enzymes help speed up the reactions that break down large food molecules.",
+    "Circulation": "Movement of a fluid through a structure.",
+    "Heart": "The pump of the circulatory system.",
+    "Blood": "A fluid in the circulatory system.",
+    "Artery": "Blood vessels that carry blood away from the heart under high pressure.",
+    "Vein": "Blood vessels that carry blood towards the heart under low pressure. Veins have valves.",
+    "Capillary": "Thin blood vessels where diffusion of molecules into and out of the bloodstream occurs.",
+    "Efficiency": "How well something happens.",
+    "Oxygenated": "With oxygen.",
+    "Deoxygenated": "Without oxygen.",
+    "Gas exchange": "The movement of dissolved gases (oxygen and carbon dioxide) into and out of the bloodstream in the lungs.",
+    "Breathing": "Moving muscles, including the diaphragm, to draw air into and out of the lungs.",
+    "Diffusion": "The movement of molecules down a concentration gradient, from an area of high concentration to an area of low concentration.",
+    "Concentration": "The number of particles a solution contains in a given volume."
+},
+earthscience: {
+    "Crust": "The outermost layer of the Earth, made up of solid rocks and minerals.",
+    "Mantle": "The layer beneath the crust, composed of semi-solid rock that moves slowly.",
+    "Outer core": "The liquid layer of the Earth's interior, made mostly of iron and nickel.",
+    "Inner core": "The solid innermost layer of the Earth, made primarily of iron and nickel.",
+    "Convection": "The movement of heat through a fluid (liquid or gas) where warm material rises and cooler material sinks, creating a cycle.",
+    "Tectonic plate": "Large pieces of the Earth's crust and upper mantle that move and interact with each other.",
+    "Collision": "The movement of two tectonic plates toward each other, which can cause earthquakes, mountain building, and subduction.",
+    "Subduction": "The process where one tectonic plate is forced beneath another, often leading to volcanic activity.",
+    "Sea-floor spreading": "The process by which new oceanic crust is formed at mid-ocean ridges and spreads outward.",
+    "Strike-slip": "A type of fault where tectonic plates slide past each other horizontally.",
+    "Mountain building": "The formation of mountains when tectonic plates collide, causing the Earth's crust to buckle and fold.",
+    "Vent": "An opening in the Earth's surface through which magma and gases are released during a volcanic eruption.",
+    "Crater": "A large, bowl-shaped depression formed by volcanic activity or the impact of a meteor.",
+    "Cone": "The shape of a typical volcano, formed by layers of lava and ash around a central vent.",
+    "Hot spot": "An area in the Earth's mantle where hot magma rises, creating volcanic activity independent of tectonic plate boundaries.",
+    "Magma reservoir": "A large underground chamber where magma collects before it erupts to the surface.",
+    "Lava": "Magma that has reached the Earth's surface during a volcanic eruption.",
+    "Caldera": "A large, basin-like depression that forms after the eruption and collapse of a volcano.",
+    "P-wave": "A primary seismic wave that moves through solids and liquids, causing particles to compress and expand in the direction of wave movement.",
+    "S-wave": "A secondary seismic wave that moves only through solids and causes particles to move perpendicular to the direction of wave movement.",
+    "Seismograph": "A device used to detect and record the vibrations caused by seismic waves from earthquakes.",
+    "Richter scale": "A logarithmic scale used to measure the magnitude of an earthquake based on seismic wave amplitude.",
+    "Epicenter": "The point on the Earth's surface directly above the focus of an earthquake.",
+    "Focus": "The point inside the Earth where an earthquake originates, typically along a fault line."
+}
+
+    };
+
+let currentQuiz = "climate";
+let usedTerms = new Set();
+let correctAnswers = 0;
+let totalQuestions = 0;
+
+function startQuiz(topic) {
+    currentQuiz = topic;
+    usedTerms.clear();
+    correctAnswers = 0;
+    totalQuestions = 0;
+    document.getElementById("start-screen").classList.add("hidden");
+    document.getElementById("quiz-screen").classList.remove("hidden");
+    loadQuestion();
+}
+
+function loadQuestion() {
+    const terms = Object.keys(data[currentQuiz]);
+    let availableTerms = terms.filter(term => !usedTerms.has(term));
+
+    if (availableTerms.length === 0) {
+        let percentage = (correctAnswers / totalQuestions) * 100;
+        document.getElementById("options").innerHTML = `Quiz completed! Your score: ${percentage.toFixed(2)}%<br>Restarting...`;
+        document.getElementById("feedback").textContent = "All questions asked!";
+        setTimeout(() => {
+            usedTerms.clear();
+            correctAnswers = 0;
+            totalQuestions = 0;
+            loadQuestion();
+        }, 3000);
+        return;
+    }
+
+    const correctTerm = availableTerms[Math.floor(Math.random() * availableTerms.length)];
+    const correctDefinition = data[currentQuiz][correctTerm];
+    usedTerms.add(correctTerm);
+    totalQuestions++;
+
+    const shuffledTerms = terms.filter(t => t !== correctTerm)
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 4);
+    shuffledTerms.push(correctTerm);
+    shuffledTerms.sort(() => 0.5 - Math.random());
+
+    document.getElementById("definition").textContent = correctDefinition;
+    const optionsContainer = document.getElementById("options");
+    optionsContainer.innerHTML = "";
+    document.getElementById("feedback").textContent = "";
+
+    shuffledTerms.forEach(term => {
+        const btn = document.createElement("button");
+        btn.textContent = term;
+        btn.className = "option";
+        btn.onclick = () => {
+            if (term === correctTerm) {
+                btn.classList.add("correct");
+                document.getElementById("feedback").textContent = "✅ Correct!";
+                correctAnswers++;
+            } else {
+                btn.classList.add("wrong");
+                document.getElementById("feedback").textContent = `The correct answer was: ${correctTerm}`;
+            }
+            setTimeout(loadQuestion, 2000);
+        };
+        optionsContainer.appendChild(btn);
+    });
+}
+</script>
+
+</body>
+</html>
