@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Drag-and-Drop Cloze Quiz</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      padding: 2em;
+      background-color: #f5f5f5;
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 700px;
+      margin: auto;
+    }
+
+    .question {
+      display: none;
+    }
+
+    .question.active {
+      display: block;
+    }
+
+    .blank {
+      display: inline-block;
+      width: 120px;
+      border-bottom: 2px dashed #999;
+      margin: 0 5px;
+      min-height: 25px;
+      vertical-align: middle;
+      background-color: #f0f0f0;
+      padding: 4px 6px;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    .word-bank {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .draggable {
+      background: #e0e0e0;
+      border-radius: 8px;
+      padding: 10px 15px;
+      cursor: grab;
+      font-size: 1rem;
+      user-select: none;
+      transition: background 0.3s;
+    }
+
+    .draggable:hover {
+      background: #d0d0d0;
+    }
+
+    .correct {
+      background: #a0e6a0 !important;
+    }
+
+    .wrong {
+      background: #e6a0a0 !important;
+    }
+
+    .controls {
+      margin-top: 20px;
+    }
+
+    button {
+      margin-top: 1em;
+      padding: 0.8em 1.6em;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #feedback {
+      margin-top: 1em;
+      font-weight: bold;
+      color: #444;
+    }
+
+    #progress {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #444;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div id="quiz-container"></div>
+    <div id="progress">Progress: 1/15</div> <!-- Progress section -->
+  </div>
+
+
+  <script>
+  const questions = [
+  {
+    sentence: `The Earth is made of layers: the outermost <span class="blank" data-answer="crust"></span>, beneath it the <span class="blank" data-answer="mantle"></span>, then the <span class="blank" data-answer="outer core"></span>, and finally the solid <span class="blank" data-answer="inner core"></span>.`,
+    wordBank: ["inner core", "mantle", "outer core", "crust"]
+  },
+  {
+    sentence: `<span class="blank" data-answer="Tectonic plates"></span> are pieces of the Earth's crust that move due to <span class="blank" data-answer="convection"></span> currents in the mantle. Their movement can cause <span class="blank" data-answer="earthquakes"></span> and <span class="blank" data-answer="volcanoes"></span>.`,
+    wordBank: ["convection", "volcanoes", "earthquakes", "Tectonic plates"]
+  },
+  {
+    sentence: `When two tectonic plates collide, one may slide beneath the other in a process called <span class="blank" data-answer="subduction"></span>, or push together causing <span class="blank" data-answer="mountain building"></span>.`,
+    wordBank: ["mountain building", "collision", "subduction"]
+  },
+  {
+    sentence: `At divergent boundaries, <span class="blank" data-answer="sea-floor spreading"></span> occurs as magma rises, forming new crust. At transform boundaries, plates slide past each other in a <span class="blank" data-answer="strike-slip"></span> motion.`,
+    wordBank: ["strike-slip", "sea-floor spreading", "convection"]
+  },
+  {
+    sentence: `A volcano may form above a <span class="blank" data-answer="hot spot"></span> where magma rises from a <span class="blank" data-answer="magma reservoir"></span>. The magma erupts through a <span class="blank" data-answer="vent"></span>, often forming a <span class="blank" data-answer="cone"></span> and a <span class="blank" data-answer="crater"></span>.`,
+    wordBank: ["magma reservoir", "crater", "hot spot", "cone", "vent"]
+  },
+  {
+    sentence: `A massive eruption may lead to the collapse of a volcano’s summit, forming a <span class="blank" data-answer="caldera"></span>. Lava flows down the sides, and ash spreads across the land.`,
+    wordBank: ["caldera", "lava", "ash"]
+  },
+  {
+    sentence: `An earthquake starts at the <span class="blank" data-answer="focus"></span> below the Earth's surface. The point directly above it on the surface is called the <span class="blank" data-answer="epicenter"></span>.`,
+    wordBank: ["focus", "epicenter", "seismic waves"]
+  },
+  {
+    sentence: `Two types of seismic waves are <span class="blank" data-answer="p-wave"></span> (which move faster and arrive first) and <span class="blank" data-answer="s-wave"></span>. Earthquakes are measured using a <span class="blank" data-answer="seismograph"></span> and the <span class="blank" data-answer="Richter scale"></span>.`,
+    wordBank: ["s-wave", "Richter scale", "p-wave", "seismograph"]
+  },
+  {
+    sentence: `Tsunamis are often caused by underwater <span class="blank" data-answer="earthquakes"></span> or volcanic eruptions. They can have devastating <span class="blank" data-answer="effects"></span> on coastal communities.`,
+    wordBank: ["earthquakes", "effects", "tsunami"]
+  },
+  {
+    sentence: `To stay safe during geological events, people should listen to emergency <span class="blank" data-answer="advice"></span>, follow evacuation <span class="blank" data-answer="plans"></span>, and stay away from <span class="blank" data-answer="coastlines"></span> after a tsunami warning.`,
+    wordBank: ["advice", "coastlines", "plans"]
+  },
+  {
+    sentence: `One way to study major geological events is to <span class="blank" data-answer="investigate"></span> the <span class="blank" data-answer="causes"></span> and <span class="blank" data-answer="effects"></span> of past earthquakes, volcanoes, or tsunamis.`,
+    wordBank: ["investigate", "effects", "causes"]
+  }
+];
+
+
+    let currentIndex = 0;
+
+    function renderQuestion(index) {
+      const q = questions[index];
+      const container = document.getElementById('quiz-container');
+
+      const qDiv = document.createElement('div');
+      qDiv.classList.add('question');
+      if (index === 0) qDiv.classList.add('active');
+
+      const sentenceHTML = `<p>${q.sentence}</p>`;
+      const wordBankHTML = q.wordBank.map(word =>
+        `<div class="draggable" draggable="true" ondragstart="drag(event)" id="word-${word}">${word}</div>`
+      ).join('');
+
+      qDiv.innerHTML = `
+        ${sentenceHTML}
+        <div class="word-bank">${wordBankHTML}</div>
+        <div class="controls">
+          <button onclick="checkAnswers(this)">Check Answer</button>
+        </div>
+      `;
+
+      container.appendChild(qDiv);
+
+      const blanks = qDiv.querySelectorAll('.blank');
+      blanks.forEach(blank => {
+        blank.setAttribute('ondragover', 'allowDrop(event)');
+        blank.setAttribute('ondrop', 'drop(event)');
+      });
+
+      updateProgress(); // Update progress when rendering each question
+    }
+
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+
+    function drag(ev) {
+      ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+      ev.preventDefault();
+      const data = ev.dataTransfer.getData("text");
+      const dragged = document.getElementById(data);
+
+      // If already filled, remove the old word
+      if (ev.target.firstChild) {
+        ev.target.innerHTML = '';
+      }
+
+      const clone = dragged.cloneNode(true);
+      clone.setAttribute("draggable", "false");
+      clone.style.cursor = "default";
+      clone.classList.remove("draggable");
+      ev.target.innerHTML = '';
+      ev.target.appendChild(clone);
+    }
+
+    function checkAnswers(button) {
+      const questionDiv = button.closest('.question');
+      const blanks = questionDiv.querySelectorAll('.blank');
+      let allCorrect = true;
+
+      blanks.forEach(blank => {
+        const correctAnswer = blank.dataset.answer.toLowerCase();
+        const userAnswer = blank.textContent.trim().toLowerCase();
+
+        if (userAnswer === correctAnswer) {
+          blank.classList.add('correct');
+        } else {
+          allCorrect = false;
+        }
+      });
+
+      if (allCorrect) {
+        setTimeout(() => nextQuestion(), 600);
+      } else {
+        // Reset wrong answers after short delay
+        setTimeout(() => {
+          blanks.forEach(blank => {
+            blank.innerHTML = '';
+            blank.style.borderColor = '#000';
+            blank.classList.remove('correct');
+          });
+          // Re-add word bank
+          const wordBank = questionDiv.querySelector('.word-bank');
+          wordBank.innerHTML = '';
+          const words = questions[currentIndex].wordBank;
+          words.forEach(word => {
+            const wordDiv = document.createElement('div');
+            wordDiv.className = 'draggable';
+            wordDiv.draggable = true;
+            wordDiv.id = `word-${word}`;
+            wordDiv.ondragstart = drag;
+            wordDiv.textContent = word;
+            wordBank.appendChild(wordDiv);
+          });
+        }, 800);
+      }
+    }
+
+    function nextQuestion() {
+      const questionsDivs = document.querySelectorAll('.question');
+      questionsDivs[currentIndex].classList.remove('active');
+      currentIndex++;
+      if (currentIndex < questions.length) {
+        questionsDivs[currentIndex].classList.add('active');
+      } else {
+        document.getElementById('quiz-container').innerHTML = "<h2>Ka pai! You’ve finished the quiz!</h2>";
+      }
+      updateProgress(); // Update progress when moving to next question
+    }
+
+    function updateProgress() {
+      const progressElement = document.getElementById('progress');
+      progressElement.textContent = `Progress: ${currentIndex + 1}/${questions.length}`;
+    }
+
+    // Render all questions at load
+    questions.forEach((_, i) => renderQuestion(i)); 
+    </script>
+</body>
+</html>
