@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Drag-and-Drop Cloze Quiz</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      padding: 2em;
+      background-color: #f5f5f5;
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 700px;
+      margin: auto;
+    }
+
+    .question {
+      display: none;
+    }
+
+    .question.active {
+      display: block;
+    }
+
+    .blank {
+      display: inline-block;
+      width: 120px;
+      border-bottom: 2px dashed #999;
+      margin: 0 5px;
+      min-height: 25px;
+      vertical-align: middle;
+      background-color: #f0f0f0;
+      padding: 4px 6px;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    .word-bank {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .draggable {
+      background: #e0e0e0;
+      border-radius: 8px;
+      padding: 10px 15px;
+      cursor: grab;
+      font-size: 1rem;
+      user-select: none;
+      transition: background 0.3s;
+    }
+
+    .draggable:hover {
+      background: #d0d0d0;
+    }
+
+    .correct {
+      background: #a0e6a0 !important;
+    }
+
+    .wrong {
+      background: #e6a0a0 !important;
+    }
+
+    .controls {
+      margin-top: 20px;
+    }
+
+    button {
+      margin-top: 1em;
+      padding: 0.8em 1.6em;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #feedback {
+      margin-top: 1em;
+      font-weight: bold;
+      color: #444;
+    }
+
+    #progress {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #444;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      border-radius: 10px;
+      width: 80%;
+      max-width: 500px;
+      text-align: left;
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div id="quiz-container"></div>
+    <div id="progress">Progress: 1/10</div>
+  </div>
+
+  <div id="instructionModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeInstructions()">&times;</span>
+      <h3>Instructions</h3>
+      <p>1. Read each sentence and look for the missing words (blanks).</p>
+      <p>2. Drag the correct words from the word bank into each blank.</p>
+      <p>3. Click "Check Answer" to see if you're right.</p>
+      <p>4. If you get them all correct, you'll move to the next question automatically.</p>
+    </div>
+  </div>
+
+  <script>
+    function openInstructions() {
+      document.getElementById("instructionModal").style.display = "block";
+    }
+
+    function closeInstructions() {
+      document.getElementById("instructionModal").style.display = "none";
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById("instructionModal");
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    };
+  </script>
+
+  <!-- Your original script -->
+  <script>
+    const questions = [
+  {
+    sentence: `The shape of DNA is a <span class="blank" data-answer="double helix"></span>. It is made of repeating units called <span class="blank" data-answer="nucleotides"></span>, each containing a sugar, phosphate, and a <span class="blank" data-answer="base"></span>. Bases pair according to the base pairing rule: A with <span class="blank" data-answer="T"></span> and C with G.`,
+    wordBank: ["base", "T", "nucleotides", "double helix"]
+  },
+  {
+    sentence: `A <span class="blank" data-answer="gene"></span> is a section of DNA that codes for a specific <span class="blank" data-answer="trait"></span>. Different versions of a gene are called <span class="blank" data-answer="alleles"></span>. All of the DNA in a cell is packaged into <span class="blank" data-answer="chromosomes"></span>.`,
+    wordBank: ["chromosomes", "trait", "alleles", "gene"]
+  },
+  {
+    sentence: `A genotype shows the <span class="blank" data-answer="alleles"></span> an organism has. A phenotype is the <span class="blank" data-answer="observable"></span> trait. A <span class="blank" data-answer="dominant"></span> allele only needs one copy to be expressed, while a <span class="blank" data-answer="recessive"></span> allele needs two.`,
+    wordBank: ["dominant", "alleles", "recessive", "observable"]
+  },
+  {
+    sentence: `A person with two identical alleles is <span class="blank" data-answer="homozygous"></span>, and if the alleles are different, they are <span class="blank" data-answer="heterozygous"></span>. Two dominant alleles make a <span class="blank" data-answer="homozygous dominant"></span> genotype, while two recessives make a <span class="blank" data-answer="homozygous recessive"></span> genotype.`,
+    wordBank: ["heterozygous", "homozygous recessive", "homozygous", "homozygous dominant"]
+  },
+  {
+    sentence: `We use a <span class="blank" data-answer="Punnett Square"></span> to predict inheritance patterns. It shows possible <span class="blank" data-answer="genotypes"></span> and their associated <span class="blank" data-answer="phenotypes"></span>. This helps predict <span class="blank" data-answer="ratios"></span> in offspring.`,
+    wordBank: ["phenotypes", "Punnett Square", "ratios", "genotypes"]
+  },
+  {
+    sentence: `Genetic <span class="blank" data-answer="variation"></span> allows species to adapt to changing environments. Greater <span class="blank" data-answer="diversity"></span> means higher survival chances, especially for <span class="blank" data-answer="endemic"></span> species.`,
+    wordBank: ["diversity", "variation", "endemic"]
+  },
+  {
+    sentence: `Adaptations can be <span class="blank" data-answer="structural"></span>, <span class="blank" data-answer="behavioural"></span>, or <span class="blank" data-answer="physiological"></span>. These adaptations help organisms <span class="blank" data-answer="survive"></span> in their environment.`,
+    wordBank: ["behavioural", "survive", "structural", "physiological"]
+  },
+  {
+    sentence: `A <span class="blank" data-answer="mutation"></span> is a change in the DNA <span class="blank" data-answer="sequence"></span>. It can result in a new <span class="blank" data-answer="phenotype"></span>. Mutations can be caused by <span class="blank" data-answer="mutagens"></span> like radiation or chemicals.`,
+    wordBank: ["phenotype", "sequence", "mutagens", "mutation"]
+  },
+  {
+    sentence: `The relationship between DNA, genes, alleles, and chromosomes is: DNA makes up <span class="blank" data-answer="chromosomes"></span>, which contain <span class="blank" data-answer="genes"></span>. Each gene can have different <span class="blank" data-answer="alleles"></span> that affect the <span class="blank" data-answer="genotype"></span> and phenotype.`,
+    wordBank: ["genotype", "alleles", "chromosomes", "genes"]
+  },
+  {
+    sentence: `Genetic disorders can be inherited when <span class="blank" data-answer="recessive"></span> alleles are passed from both parents. If only one parent passes the allele, the person may be a <span class="blank" data-answer="carrier"></span> but not show the <span class="blank" data-answer="phenotype"></span>.`,
+    wordBank: ["carrier", "phenotype", "recessive"]
+  }
+];
+
+
+
+    let currentIndex = 0;
+
+    function renderQuestion(index) {
+      const q = questions[index];
+      const container = document.getElementById('quiz-container');
+
+      const qDiv = document.createElement('div');
+      qDiv.classList.add('question');
+      if (index === 0) qDiv.classList.add('active');
+
+      const sentenceHTML = `<p>${q.sentence}</p>`;
+      const wordBankHTML = q.wordBank.map(word =>
+        `<div class="draggable" draggable="true" ondragstart="drag(event)" id="word-${word}">${word}</div>`
+      ).join('');
+
+      qDiv.innerHTML = `
+        ${sentenceHTML}
+        <div class="word-bank">${wordBankHTML}</div>
+        <div class="controls">
+            <button onclick="openInstructions()">Instructions</button>
+          <button onclick="checkAnswers(this)">Check Answer</button>
+        </div>
+      `;
+
+      container.appendChild(qDiv);
+
+      const blanks = qDiv.querySelectorAll('.blank');
+      blanks.forEach(blank => {
+        blank.setAttribute('ondragover', 'allowDrop(event)');
+        blank.setAttribute('ondrop', 'drop(event)');
+      });
+
+      updateProgress();
+    }
+
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+
+    function drag(ev) {
+      ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+      ev.preventDefault();
+      const data = ev.dataTransfer.getData("text");
+      const dragged = document.getElementById(data);
+      if (ev.target.firstChild) {
+        ev.target.innerHTML = '';
+      }
+      const clone = dragged.cloneNode(true);
+      clone.setAttribute("draggable", "false");
+      clone.style.cursor = "default";
+      clone.classList.remove("draggable");
+      ev.target.innerHTML = '';
+      ev.target.appendChild(clone);
+    }
+    function openInstructions() {
+      document.getElementById("instructionModal").style.display = "block";
+    }
+
+    function closeInstructions() {
+      document.getElementById("instructionModal").style.display = "none";
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById("instructionModal");
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    };
+    function checkAnswers(button) {
+      const questionDiv = button.closest('.question');
+      const blanks = questionDiv.querySelectorAll('.blank');
+      let allCorrect = true;
+
+      blanks.forEach(blank => {
+        const correctAnswer = blank.dataset.answer.toLowerCase();
+        const userAnswer = blank.textContent.trim().toLowerCase();
+
+        if (userAnswer === correctAnswer) {
+          blank.classList.add('correct');
+        } else {
+          allCorrect = false;
+        }
+      });
+
+      if (allCorrect) {
+        setTimeout(() => nextQuestion(), 600);
+      } else {
+        setTimeout(() => {
+          blanks.forEach(blank => {
+            blank.innerHTML = '';
+            blank.style.borderColor = '#000';
+            blank.classList.remove('correct');
+          });
+          const wordBank = questionDiv.querySelector('.word-bank');
+          wordBank.innerHTML = '';
+          const words = questions[currentIndex].wordBank;
+          words.forEach(word => {
+            const wordDiv = document.createElement('div');
+            wordDiv.className = 'draggable';
+            wordDiv.draggable = true;
+            wordDiv.id = `word-${word}`;
+            wordDiv.ondragstart = drag;
+            wordDiv.textContent = word;
+            wordBank.appendChild(wordDiv);
+          });
+        }, 800);
+      }
+    }
+
+    function nextQuestion() {
+      const questionsDivs = document.querySelectorAll('.question');
+      questionsDivs[currentIndex].classList.remove('active');
+      currentIndex++;
+      if (currentIndex < questions.length) {
+        questionsDivs[currentIndex].classList.add('active');
+      } else {
+        document.getElementById('quiz-container').innerHTML = "<h2>Ka pai! You’ve finished the quiz!</h2>";
+      }
+      updateProgress();
+    }
+
+    function updateProgress() {
+      const progressElement = document.getElementById('progress');
+      progressElement.textContent = `Progress: ${Math.min(currentIndex + 1, questions.length)}/${questions.length}`;
+    }
+
+    questions.forEach((_, i) => renderQuestion(i));
+  </script>
+</body>
+</html>
