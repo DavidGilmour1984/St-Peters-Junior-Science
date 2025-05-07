@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Punnett Square Practice</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      padding: 2em;
+      background-color: #f5f5f5;
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      padding: 1em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .square-section {
+      margin-right: 2em;
+    }
+
+    table {
+      margin: 1em auto;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      border: 2px solid #ccc;
+      width: 70px;
+      height: 70px;
+      font-size: 1.2em;
+      text-align: center;
+    }
+
+    input[type="text"] {
+      width: 60px;
+      height: 60px;
+      font-size: 1.2em;
+      text-align: center;
+      border: none;
+    }
+
+    .ratio-section {
+      margin-top: 2em;
+    }
+
+    .ratio-section p {
+      font-size: 1.2em;
+    }
+
+    .ratio-section input {
+      width: 50px;
+      height: 30px;
+      font-size: 1em;
+      margin-left: 0.5em;
+      text-align: center;
+    }
+
+    button {
+      margin: 1em 0.5em;
+      padding: 0.8em 1.6em;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #feedback {
+      margin-top: 1em;
+      font-weight: bold;
+    }
+
+    .incorrect {
+      border: 2px solid red;
+      background-color: #ffe5e5;
+    }
+
+    .score-display {
+      font-size: 1.3rem;
+      padding-left: 1em;
+      padding-top: 0.7em;
+      margin: 0;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0; top: 0;
+      width: 100%; height: 100%;
+      overflow: auto;
+      background-color: rgba(0,0,0,0.4);
+    }
+
+    .modal-content {
+      background-color: #fff;
+      margin: 15% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      border-radius: 10px;
+      width: 80%;
+      max-width: 500px;
+      text-align: left;
+    }
+
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Punnett Square Quiz (Complex)</h2>
+    <p id="question"></p>
+    <div class="container">
+      <div class="square-section">
+        <table>
+          <tbody>
+            <tr>
+              <th></th>
+              <th><input type="text" id="p2a" maxlength="1"></th>
+              <th><input type="text" id="p2b" maxlength="1"></th>
+            </tr>
+            <tr>
+              <th><input type="text" id="p1a" maxlength="1"></th>
+              <td><input type="text" id="c1" maxlength="2"></td>
+              <td><input type="text" id="c2" maxlength="2"></td>
+            </tr>
+            <tr>
+              <th><input type="text" id="p1b" maxlength="1"></th>
+              <td><input type="text" id="c3" maxlength="2"></td>
+              <td><input type="text" id="c4" maxlength="2"></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="ratio-section">
+        <p>Genotype Ratio:</p>
+        <p id="genotype-ratio"></p>
+        <p>Phenotype Ratio:</p>
+        <p id="phenotype-ratio"></p>
+      </div>
+    </div>
+
+    <div style="display: flex; justify-content: center; align-items: center;">
+      <button onclick="openInstructions()">Instructions</button>
+      <button onclick="checkAnswer()">Check Answer</button>
+      <p class="score-display">Score: <span id="score">0</span></p>
+    </div>
+
+    <p id="feedback"></p>
+  </div>
+
+  <!-- Modal HTML -->
+  <div id="instructionModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeInstructions()">&times;</span>
+      <h3>Instructions</h3>
+      <p>1. Enter the alleles for each parent in the top and left boxes of the Punnett square.</p>
+      <p>2. Complete the four offspring genotype combinations in the middle of the square.</p>
+      <p>3. Enter the genotype ratio (e.g., WW, Ww, ww) in the inputs below.</p>
+      <p>4. Enter the phenotype ratio (e.g., White, Grey) based on dominant/recessive traits.</p>
+      <p>5. Click "Check Answer" to see if you're correct and increase your score!</p>
+    </div>
+  </div>
+
+
+  <script>
+    const animals = ["rabbit", "dog", "cat", "mouse", "horse", "goat", "lama", "rat", "donkey"];
+
+const traits = [
+  { name: "fur color", dominant: "White", recessive: "Grey", allele: "W" },
+  { name: "eye color", dominant: "Brown", recessive: "Blue", allele: "B" },
+  { name: "tail length", dominant: "Long", recessive: "Short", allele: "L" },
+  { name: "height", dominant: "Tall", recessive: "Short", allele: "T" },
+  { name: "coat type", dominant: "Short", recessive: "Long", allele: "C" },
+  { name: "hearing ability", dominant: "Normal", recessive: "Deaf", allele: "H" },
+  { name: "coat pattern", dominant: "Solid", recessive: "Spotted", allele: "P" },
+  { name: "agility", dominant: "High", recessive: "Low", allele: "A" },
+  { name: "sleeping pattern", dominant: "Nocturnal", recessive: "Diurnal", allele: "S" },
+  { name: "water tolerance", dominant: "High", recessive: "Low", allele: "W" },
+  { name: "sensory acuity", dominant: "Sharp", recessive: "Blunt", allele: "S" },
+  { name: "teeth type", dominant: "Sharp", recessive: "Blunt", allele: "T" },
+  { name: "bite strength", dominant: "Strong", recessive: "Weak", allele: "B" },
+  { name: "speed", dominant: "Fast", recessive: "Slow", allele: "F" }
+];
+
+
+  let correctAnswers = [], p1, p2, trait, allele, genotypeCounts = {}, phenotypeCounts = {};
+  let score = 0;
+
+  function randomGenotype(type, allele) {
+    if (type === "homozygous dominant") return allele + allele;
+    if (type === "homozygous recessive") return allele.toLowerCase() + allele.toLowerCase();
+    return allele + allele.toLowerCase(); // heterozygous
+  }
+
+  function capitalize(str) {
+    return str[0].toUpperCase() + str.slice(1);
+  }
+
+  function updateRatioSentences() {
+    const genotypeRatio = document.getElementById("genotype-ratio");
+    const phenotypeRatio = document.getElementById("phenotype-ratio");
+
+    const dominantLetter = allele.toUpperCase();
+    const recessiveLetter = allele.toLowerCase();
+    genotypeRatio.innerHTML = `${dominantLetter}${dominantLetter}: <input type="number" id="g_${dominantLetter}${dominantLetter}" min="0">  ${dominantLetter}${recessiveLetter}: <input type="number" id="g_${dominantLetter}${recessiveLetter}" min="0">  ${recessiveLetter}${recessiveLetter}: <input type="number" id="g_${recessiveLetter}${recessiveLetter}" min="0">`;
+
+    phenotypeRatio.innerHTML = `${trait.dominant}: <input type="number" id="p_${trait.dominant}" min="0">  ${trait.recessive}: <input type="number" id="p_${trait.recessive}" min="0">`;
+  }
+
+  function countRatios(genotypes) {
+    genotypeCounts = {};
+    phenotypeCounts = {};
+
+    genotypes.forEach(g => {
+      const sorted = g.split('').sort().join('');
+      genotypeCounts[sorted] = (genotypeCounts[sorted] || 0) + 1;
+
+      const phenotype = (g.includes(allele)) ? trait.dominant : trait.recessive;
+      phenotypeCounts[phenotype] = (phenotypeCounts[phenotype] || 0) + 1;
+    });
+  }
+
+  function newQuestion() {
+    const animal = animals[Math.floor(Math.random() * animals.length)];
+    trait = traits[Math.floor(Math.random() * traits.length)];
+
+    function weightedGenotypeType() {
+      const rand = Math.random();
+      if (rand < 0.45) return "heterozygous";
+      else if (rand < 0.475) return "homozygous dominant";
+      else if (rand < 0.5) return "homozygous recessive";
+      else {
+        const rest = ["heterozygous", "homozygous dominant", "homozygous recessive"];
+        return rest[Math.floor(Math.random() * 3)];
+      }
+    }
+
+    let parent1type = weightedGenotypeType();
+    let parent2type = weightedGenotypeType();
+
+    if (
+      (parent1type === "homozygous dominant" && parent2type === "homozygous dominant") ||
+      (parent1type === "homozygous recessive" && parent2type === "homozygous recessive")
+    ) {
+      if (Math.random() > 0.70) {
+        parent1type = "heterozygous";
+      }
+    }
+
+    allele = trait.allele;
+    p1 = randomGenotype(parent1type, allele);
+    p2 = randomGenotype(parent2type, allele);
+
+    const p1Phenotype = p1.includes(allele) ? trait.dominant : trait.recessive;
+    const p2Phenotype = p2.includes(allele) ? trait.dominant : trait.recessive;
+    const p1Purebred = p1 === p1.toUpperCase() || p1 === p1.toLowerCase();
+    const p2Purebred = p2 === p2.toUpperCase() || p2 === p2.toLowerCase();
+
+    document.getElementById("question").textContent =
+      `A ${animal} has a gene for ${trait.name}. The dominant allele is for ${trait.dominant} (${allele}), the recessive for ${trait.recessive} (${allele.toLowerCase()}). ` +
+      `Complete the punnett square and ratios for a Father who is ${p2Phenotype} and ${p2Purebred ? 'purebred' : 'heterozygous'}, and a Mother who is ${p1Phenotype} and ${p1Purebred ? 'purebred' : 'non-purebred'}.`;
+
+    ["p1a", "p1b", "p2a", "p2b", "c1", "c2", "c3", "c4"].forEach(id => {
+      document.getElementById(id).value = "";
+    });
+
+    correctAnswers = [
+      p1[0] + p2[0],
+      p1[0] + p2[1],
+      p1[1] + p2[0],
+      p1[1] + p2[1]
+    ];
+
+    countRatios(correctAnswers);
+    updateRatioSentences();
+    document.getElementById("feedback").textContent = "";
+  }
+    function openInstructions() {
+      document.getElementById("instructionModal").style.display = "block";
+    }
+
+    function closeInstructions() {
+      document.getElementById("instructionModal").style.display = "none";
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById("instructionModal");
+      if (event.target == modal) {
+        modal.style.display = "none";
+      }
+    };
+  function checkAnswer() {
+    const feedback = document.getElementById("feedback");
+    let anyIncorrect = false;
+
+    const parentAlleles = {
+      p1a: p1[0],
+      p1b: p1[1],
+      p2a: p2[0],
+      p2b: p2[1]
+    };
+
+    for (let id in parentAlleles) {
+      const input = document.getElementById(id);
+      const value = input.value;
+      if (value === "" || value !== parentAlleles[id]) {
+        input.classList.add("incorrect");
+        anyIncorrect = true;
+      } else {
+        input.classList.remove("incorrect");
+      }
+    }
+
+    const cellValues = [
+      document.getElementById("c1").value,
+      document.getElementById("c2").value,
+      document.getElementById("c3").value,
+      document.getElementById("c4").value
+    ];
+
+    const expected = [
+      p1[0] + p2[0],
+      p1[0] + p2[1],
+      p1[1] + p2[0],
+      p1[1] + p2[1]
+    ];
+
+    for (let i = 0; i < 4; i++) {
+      const val = cellValues[i];
+      const reversed = expected[i].split('').reverse().join('');
+      const inputElement = document.getElementById(`c${i + 1}`);
+      if (val === "" || (val !== expected[i] && val !== reversed)) {
+        inputElement.classList.add("incorrect");
+        anyIncorrect = true;
+      } else {
+        inputElement.classList.remove("incorrect");
+      }
+    }
+
+    // ✅ Enhanced: Check all genotype ratio inputs
+    const dominant = allele.toUpperCase();
+    const recessive = allele.toLowerCase();
+    const genotypeInputs = [
+      `g_${dominant}${dominant}`,
+      `g_${dominant}${recessive}`,
+      `g_${recessive}${recessive}`
+    ];
+
+    genotypeInputs.forEach(id => {
+      const input = document.getElementById(id);
+      const expected = id.replace("g_", "");
+      if (genotypeCounts[expected]) {
+        if (input.value === "" || parseInt(input.value) !== genotypeCounts[expected]) {
+          input.classList.add("incorrect");
+          anyIncorrect = true;
+        } else {
+          input.classList.remove("incorrect");
+        }
+      } else {
+        if (input.value !== "" && parseInt(input.value) !== 0) {
+          input.classList.add("incorrect");
+          anyIncorrect = true;
+        } else {
+          input.classList.remove("incorrect");
+        }
+      }
+    });
+
+    // ✅ Enhanced: Check all phenotype ratio inputs
+    [trait.dominant, trait.recessive].forEach(type => {
+      const input = document.getElementById("p_" + type);
+      if (phenotypeCounts[type]) {
+        if (input.value === "" || parseInt(input.value) !== phenotypeCounts[type]) {
+          input.classList.add("incorrect");
+          anyIncorrect = true;
+        } else {
+          input.classList.remove("incorrect");
+        }
+      } else {
+        if (input.value !== "" && parseInt(input.value) !== 0) {
+          input.classList.add("incorrect");
+          anyIncorrect = true;
+        } else {
+          input.classList.remove("incorrect");
+        }
+      }
+    });
+
+    if (anyIncorrect) {
+      feedback.textContent = "Some answers are incorrect. Please try again!";
+    } else {
+      score++;
+      document.getElementById("score").textContent = score;
+      feedback.textContent = "Correct! Well done.";
+      setTimeout(newQuestion, 10);
+    }
+  }
+
+  newQuestion(); 
+    
+
+
+  </script>
+</body>
+</html>
