@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Learning Outcomes</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      background-color: #f5f5f5;
+      padding: 1.5em;
+      text-align: center;
+    }
+
+    .container {
+      background: white;
+      padding: 1.5em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h1 {
+      margin-bottom: 1em;
+    }
+
+    ol {
+      font-size: 1rem;
+      line-height: 2rem;
+      margin-left: 0;
+      padding-left: 1.2em;
+      text-align: left;
+    }
+
+    li {
+      margin-bottom: 1em;
+      position: relative;
+    }
+
+    .info-button {
+      margin-left: 0.5em;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 1.6em;
+      height: 1.6em;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1em;
+      vertical-align: middle;
+    }
+
+    .popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 2px solid #007BFF;
+      border-radius: 10px;
+      padding: 1em;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      max-width: 500px;
+      z-index: 1000;
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+    }
+
+    .popup p {
+      margin-bottom: 0.5em;
+    }
+
+    .close-btn {
+      background: #007BFF;
+      color: white;
+      border: none;
+      padding: 0.4em 0.8em;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 0.5em;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Forces and Motion Learning Outcomes</h1>
+  <ol id="outcomes-list"></ol>
+</div>
+
+<div class="overlay" id="overlay" onclick="closePopup()"></div>
+<div class="popup" id="popup">
+  <p id="popup-text"></p>
+  <button class="close-btn" onclick="closePopup()">Close</button>
+</div>
+
+<script>
+ const outcomes = [
+  "Define a force and state the units it is measured in.",
+  "Describe how forces can change the shape, speed, or direction of an object.",
+  "Identify if forces on an object are balanced or unbalanced and describe their effects.",
+  "Use force diagrams to show and explain the motion of objects.",
+  "Define and describe the effects of friction and investigate how surface type affects it.",
+  "Explore ways to reduce the effects of friction.",
+  "Define mass and weight, and explain the difference between them.",
+  "Use the formula W = mg to calculate weight on Earth and other planets.",
+  "Identify common forces such as thrust, drag, friction, support (normal), and lift.",
+  "Draw and label force diagrams with these forces.",
+  "Identify and use values for speed, distance, and time.",
+  "Use and rearrange the formula v = Δd / Δt.",
+  "Interpret and draw distance–time graphs.",
+  "Identify and use values for acceleration, speed, time, force, and mass.",
+  "Use and rearrange the formulas F = ma and a = Δv / Δt.",
+  "Interpret and draw speed–time graphs.",
+  "State Newton’s First Law: An object stays at rest or in constant motion unless acted on by an unbalanced force.",
+  "State Newton’s Second Law: Force equals mass times acceleration (F = ma).",
+  "State Newton’s Third Law: For every action, there is an equal and opposite reaction.",
+  "Identify and explain all three of Newton’s Laws in real-world examples.",
+  "Explain terminal velocity using the concept of balanced and unbalanced forces."
+];
+
+const explanations = [
+  "A force is a push or pull on an object, measured in newtons (N). For example, when you push a swing, you are applying a force.",
+  "Forces can make objects move, stop, change speed, change direction, or change shape. For example, kicking a ball changes its speed and direction.",
+  "Balanced forces cancel each other out, so there’s no change in motion. Unbalanced forces cause acceleration. For instance, if you push a box and it moves, the forces were unbalanced.",
+  "Force diagrams (free body diagrams) show all the forces acting on an object with arrows. For example, a skydiver’s diagram might show gravity down and air resistance up.",
+  "Friction is a force that opposes motion between two surfaces. Rough surfaces create more friction. For example, sliding a box on carpet requires more force than on tiles.",
+  "Reducing friction can make things move more easily. For example, using oil in a bike chain reduces friction and helps it turn smoothly.",
+  "Mass is how much matter is in an object, measured in kilograms (kg). Weight is the force of gravity on an object, measured in newtons (N). Your mass doesn’t change on the Moon, but your weight does.",
+  "Weight (W) is calculated by multiplying mass (m) by gravitational field strength (g). For example, a 10 kg object on Earth (g = 9.8 N/kg) weighs 98 N.",
+  "Thrust is a forward force (like from an engine), drag opposes motion through air or water, lift acts upward (on planes), friction resists sliding, and support is the upward force from a surface.",
+  "You can label forces on a diagram, like showing thrust forward, friction backward, gravity down, and support force up on a moving car.",
+  "Speed is how fast something is moving. Distance is how far it goes. Time is how long it takes. For example, a car moving 100 m in 5 seconds has a speed of 20 m/s.",
+  "The formula v = Δd / Δt means speed equals distance divided by time. If a bike travels 300 m in 60 seconds, speed = 300 ÷ 60 = 5 m/s.",
+  "A distance-time graph shows how far something travels over time. A straight, upward line means constant speed. A flat line means stopped.",
+  "Acceleration is the rate of change of speed. Use the formula a = Δv / Δt (change in velocity over time) or F = ma. If a 2 kg object accelerates at 3 m/s², the force is 6 N.",
+  "Use F = ma to calculate the force needed. If a 5 kg object accelerates at 2 m/s², F = 5 × 2 = 10 N. You can rearrange the formula to find mass or acceleration too.",
+  "Speed-time graphs show how speed changes. A rising line means speeding up (acceleration), a falling line means slowing down (deceleration), and a flat line means constant speed.",
+  "Newton’s First Law says that if no unbalanced forces act, an object stays at rest or moves at constant speed. A ball rolling on a smooth floor will keep going unless friction or another force stops it.",
+  "Newton’s Second Law links force, mass, and acceleration: F = ma. Pushing a heavier trolley requires more force to get the same acceleration.",
+  "Newton’s Third Law means that for every action, there’s an equal and opposite reaction. For example, when you jump off a boat, you push the boat backwards as you move forward.",
+  "Real-world examples: First Law – a rocket coasting in space moves in a straight line until it fires engines. Second Law – a baseball accelerates faster when hit harder. Third Law – you feel a kickback when firing a gun.",
+  "Terminal velocity occurs when air resistance equals weight, so acceleration stops. A skydiver speeds up until the air resistance matches their weight, then they fall at a steady speed."
+];
+
+
+  const list = document.getElementById('outcomes-list');
+
+  outcomes.forEach((text, index) => {
+    const li = document.createElement('li');
+    li.innerHTML = `${text} <button class="info-button" onclick="showPopup(${index})">?</button>`;
+    list.appendChild(li);
+  });
+
+  function showPopup(index) {
+    document.getElementById('popup-text').textContent = explanations[index];
+    document.getElementById('popup').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
+  }
+
+  function closePopup() {
+    document.getElementById('popup').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+  }
+</script>
+
+</body>
+</html>
