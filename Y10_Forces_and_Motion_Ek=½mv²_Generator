@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kinetic Energy Quiz</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      padding: 2em;
+      background-color: #f5f5f5;
+      text-align: center;
+    }
+    .card {
+      background: white;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      margin: auto;
+    }
+    button {
+      margin: 1em;
+      padding: 1em 2em;
+      font-size: 1rem;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background-color: #28a745;
+      color: white;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: #1e7e34;
+    }
+    .hidden {
+      display: none;
+    }
+    select, #answerInput {
+      font-size: 1.2em;
+      padding: 0.5em;
+      margin-top: 1em;
+      border-radius: 8px;
+      width: 200px;
+    }
+    #feedback {
+      margin-top: 1em;
+      font-size: 1.2em;
+    }
+    #correctCount {
+      color: #007BFF;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Ek=½mv²</h2>
+    <div id="question"></div>
+    <input type="text" id="answerInput" placeholder="Answer to 2dp" />
+    <select id="unitSelect">
+      <option value="" disabled selected>Select unit</option>
+      <option value="J">J</option>
+      <option value="kg">kg</option>
+      <option value="ms⁻¹">ms⁻¹</option>
+    </select>
+    <br>
+    <button onclick="checkAnswer()">Submit Answer</button>
+    <div id="feedback" class="hidden"></div>
+    <div id="tally">Correct answers: <span id="correctCount">0</span></div>
+  </div>
+
+  <script>
+    let current = {};
+    let correctCount = 0;
+
+    function getRandom(min, max) {
+      return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+
+    function round2dp(n) {
+      return Math.round(n * 100) / 100;
+    }
+
+    function choose(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function generateQuestion() {
+      document.getElementById('feedback').classList.add('hidden');
+
+      const formulas = [
+        { type: 'Ek', question: 'Find the kinetic energy', unit: 'J' },
+        { type: 'mass', question: 'Find the mass', unit: 'kg' },
+        { type: 'velocity', question: 'Find the velocity', unit: 'ms⁻¹' }
+      ];
+
+      const contexts = ['car', 'skater', 'ball', 'bullet', 'train', 'bike'];
+      const formula = choose(formulas);
+      const context = choose(contexts);
+
+      let question = '', correctAnswer = 0, correctUnit = formula.unit;
+
+      if (formula.type === 'Ek') {
+        const m = getRandom(10, 100); // mass in kg
+        const v = getRandom(5, 30); // velocity in m/s
+        const Ek = round2dp(0.5 * m * v * v);
+        question = `A ${context} of mass ${m} kg is moving at ${v} ms⁻¹. What is its kinetic energy?`;
+        correctAnswer = Ek;
+      } else if (formula.type === 'mass') {
+        const Ek = getRandom(1000, 20000); // kinetic energy in J
+        const v = getRandom(5, 30); // velocity in m/s
+        const m = round2dp((2 * Ek) / (v * v));
+        question = `A ${context} has ${Ek} J of kinetic energy and is moving at ${v} ms⁻¹. What is its mass?`;
+        correctAnswer = m;
+      } else if (formula.type === 'velocity') {
+        const Ek = getRandom(1000, 20000); // kinetic energy in J
+        const m = getRandom(10, 100); // mass in kg
+        const v = round2dp(Math.sqrt((2 * Ek) / m));
+        question = `A ${context} has ${Ek} J of kinetic energy and a mass of ${m} kg. What is its velocity?`;
+        correctAnswer = v;
+      }
+
+      current = { question, correctAnswer, correctUnit };
+      document.getElementById('question').innerText = question;
+    }
+
+    function checkAnswer() {
+      const input = parseFloat(document.getElementById('answerInput').value).toFixed(2);
+      const selectedUnit = document.getElementById('unitSelect').value;
+      const correctRounded = current.correctAnswer.toFixed(2);
+
+      const feedback = document.getElementById('feedback');
+
+      if (input === correctRounded && selectedUnit === current.correctUnit) {
+        correctCount++;
+        feedback.textContent = `✅ Correct! The answer is ${current.correctAnswer} ${current.correctUnit}.`;
+        feedback.style.color = "#28a745";
+      } else {
+        feedback.textContent = `❌ Incorrect. The correct answer was ${current.correctAnswer} ${current.correctUnit}.`;
+        feedback.style.color = "#dc3545";
+      }
+
+      document.getElementById('correctCount').innerText = correctCount;
+      feedback.classList.remove('hidden');
+
+      setTimeout(() => {
+        generateQuestion();
+        document.getElementById('answerInput').value = '';
+        document.getElementById('unitSelect').selectedIndex = 0;
+      }, 2000);
+    }
+
+    generateQuestion();
+  </script>
+</body>
+</html>
