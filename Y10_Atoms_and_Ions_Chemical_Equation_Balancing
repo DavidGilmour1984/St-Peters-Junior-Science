@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chemical Equation Balancer</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      padding: 2em;
+      background-color: #f5f5f5;
+      text-align: center;
+      font-size: 18px; /* Adjusted base font size for consistency */
+    }
+
+    .card {
+      background: white;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 800px;
+      margin: auto;
+    }
+
+    h2 {
+      font-size: 26px; /* Adjust heading size */
+      margin-bottom: 20px;
+    }
+
+    button {
+      margin: 1em;
+      padding: 1em 2em;
+      font-size: 18px;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background-color: #28a745;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #1e7e34;
+    }
+
+    .input-box {
+      width: 60px;
+      margin: 0 10px;
+      text-align: center;
+      font-size: 24px;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    #equationContainer {
+      margin-top: 1em;
+      color: #333;
+      font-size: 22px;
+    }
+
+    #result {
+      margin-top: 1em;
+      font-weight: bold;
+      color: #333;
+      font-size: 20px;
+    }
+
+    /* Add a 'hidden' class for toggling content visibility if necessary */
+    .hidden {
+      display: none;
+    }
+
+    #restartOrSelect {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h2>Chemical Equation Balancer</h2>
+  
+  <!-- Category Selection Buttons -->
+  <div id="categorySelection">
+    <button onclick="selectCategory('metalAcid')">Metal + Acid</button>
+    <button onclick="selectCategory('carbonateAcid')">Carbonate + Acid</button>
+    <button onclick="selectCategory('baseAcid')">Base + Acid</button>
+  </div>
+
+  <!-- Chemical Equation Buttons -->
+  <div id="equationContainer"></div>
+
+  <!-- Check Answer -->
+  <div id="checkAnswerContainer" style="margin-top: 20px; display: none;">
+    <button onclick="checkAnswer()">Check Answer</button>
+  </div>
+
+  <!-- Result Display -->
+  <div id="result"></div>
+
+  <!-- Restart or Select New Reaction -->
+  <div id="restartOrSelect" style="display: none;">
+    <button onclick="restartQuiz()">Restart Quiz</button>
+    <button onclick="selectNewCategory()">Select New Reaction Type</button>
+  </div>
+</div>
+
+<script>
+  const allEquations = {
+metalAcid: [
+  { unbalanced: ["Na", "HCl", "NaCl", "H₂"], balanced: [2, 2, 2, 1], arrowIndex: 2 },
+  { unbalanced: ["Mg", "HCl", "MgCl₂", "H₂"], balanced: [1, 2, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Fe", "HCl", "FeCl₂", "H₂"], balanced: [1, 2, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Al", "HCl", "AlCl₃", "H₂"], balanced: [2, 6, 2, 3], arrowIndex: 2 },
+  { unbalanced: ["Zn", "HCl", "ZnCl₂", "H₂"], balanced: [1, 2, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Cu", "HCl", "CuCl₂", "H₂"], balanced: [1, 2, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Li", "HCl", "LiCl", "H₂"], balanced: [2, 2, 2, 1], arrowIndex: 2 },
+  { unbalanced: ["K", "HCl", "KCl", "H₂"], balanced: [2, 2, 2, 1], arrowIndex: 2 },
+  { unbalanced: ["Ca", "HCl", "CaCl₂", "H₂"], balanced: [1, 2, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Na", "H₂SO₄", "Na₂SO₄", "H₂"], balanced: [2, 2, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Mg", "H₂SO₄", "MgSO₄", "H₂"], balanced: [1, 2, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Al", "H₂SO₄", "Al₂(SO₄)₃", "H₂"], balanced: [2, 6, 1, 3], arrowIndex: 2 },
+  { unbalanced: ["Fe2+", "H₂SO₄", "FeSO₄", "H₂"], balanced: [1, 2, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Cu", "H₂SO₄", "CuSO₄", "H₂"], balanced: [1, 2, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Zn", "H₂SO₄", "ZnSO₄", "H₂"], balanced: [1, 2, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Li", "H₂SO₄", "Li₂SO₄", "H₂"], balanced: [2, 2, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["K", "H₂SO₄", "K₂SO₄", "H₂"], balanced: [2, 2, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Ca", "H₂SO₄", "CaSO₄", "H₂"], balanced: [1, 2, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Na", "HNO₃", "NaNO₃", "H₂"], balanced: [2, 2, 2, 1], arrowIndex: 2 },
+  { unbalanced: ["Ba", "HCl", "BaCl₂", "H₂"], balanced: [1, 2, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Ba", "H₂SO₄", "BaSO₄", "H₂"], balanced: [1, 1, 1, 1], arrowIndex: 2 }
+
+
+],
+carbonateAcid: [
+  { unbalanced: ["Na₂CO₃", "HCl", "NaCl", "CO₂", "H₂O"], balanced: [1, 2, 2, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["CaCO₃", "HCl", "CaCl₂", "CO₂", "H₂O"], balanced: [1, 2, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["MgCO₃", "HCl", "MgCl₂", "CO₂", "H₂O"], balanced: [1, 2, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Na₂CO₃", "H₂SO₄", "Na₂SO₄", "CO₂", "H₂O"], balanced: [1, 1, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["K₂CO₃", "HCl", "KCl", "CO₂", "H₂O"], balanced: [1, 2, 2, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["BaCO₃", "HCl", "BaCl₂", "CO₂", "H₂O"], balanced: [1, 2, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Na₂CO₃", "HNO₃", "NaNO₃", "CO₂", "H₂O"], balanced: [1, 2, 2, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["MgCO₃", "HNO₃", "Mg(NO₃)₂", "CO₂", "H₂O"], balanced: [1, 2, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["CaCO₃", "HNO₃", "Ca(NO₃)₂", "CO₂", "H₂O"], balanced: [1, 2, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Na₂CO₃", "H₂CO₃", "Na₂CO₃", "CO₂", "H₂O"], balanced: [1, 1, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["K₂CO₃", "HNO₃", "KNO₃", "CO₂", "H₂O"], balanced: [1, 2, 2, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Li₂CO₃", "HCl", "LiCl", "CO₂", "H₂O"], balanced: [1, 2, 2, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["CaCO₃", "H₂SO₄", "CaSO₄", "CO₂", "H₂O"], balanced: [1, 2, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Na₂CO₃", "H₂SO₄", "Na₂SO₄", "CO₂", "H₂O"], balanced: [1, 2, 2, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Na₂CO₃", "H₂CO₃", "Na₂CO₃", "CO₂", "H₂O"], balanced: [1, 1, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["BaCO₃", "HNO₃", "Ba(NO₃)₂", "CO₂", "H₂O"], balanced: [1, 2, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["K₂CO₃", "H₂SO₄", "K₂SO₄", "CO₂", "H₂O"], balanced: [1, 1, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Li₂CO₃", "H₂SO₄", "Li₂SO₄", "CO₂", "H₂O"], balanced: [1, 1, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["MgCO₃", "H₂SO₄", "MgSO₄", "CO₂", "H₂O"], balanced: [1, 1, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["SrCO₃", "HCl", "SrCl₂", "CO₂", "H₂O"], balanced: [1, 2, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["FeCO₃", "HCl", "FeCl₂", "CO₂", "H₂O"], balanced: [1, 2, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["ZnCO₃", "HCl", "ZnCl₂", "CO₂", "H₂O"], balanced: [1, 2, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["PbCO₃", "HCl", "PbCl₂", "CO₂", "H₂O"], balanced: [1, 2, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["FeCO₃", "H₂SO₄", "FeSO₄", "CO₂", "H₂O"], balanced: [1, 1, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["CuCO₃", "H₂SO₄", "CuSO₄", "CO₂", "H₂O"], balanced: [1, 1, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["ZnCO₃", "H₂SO₄", "ZnSO₄", "CO₂", "H₂O"], balanced: [1, 1, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["CaCO₃", "HNO₃", "Ca(NO₃)₂", "CO₂", "H₂O"], balanced: [1, 2, 1, 1, 1], arrowIndex: 2 }
+],
+baseAcid: [
+  { unbalanced: ["NaOH", "HCl", "NaCl", "H₂O"], balanced: [1, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["H₂SO₄", "NaOH", "Na₂SO₄", "H₂O"], balanced: [1, 2, 1, 2], arrowIndex: 2 },
+  { unbalanced: ["KOH", "HCl", "KCl", "H₂O"], balanced: [1, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Ca(OH)₂", "HCl", "CaCl₂", "H₂O"], balanced: [1, 2, 1, 2], arrowIndex: 2 },
+  { unbalanced: ["NaOH", "HNO₃", "NaNO₃", "H₂O"], balanced: [1, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Ba(OH)₂", "HCl", "BaCl₂", "H₂O"], balanced: [1, 2, 1, 2], arrowIndex: 2 },
+  { unbalanced: ["Mg(OH)₂", "HCl", "MgCl₂", "H₂O"], balanced: [1, 2, 1, 2], arrowIndex: 2 },
+  { unbalanced: ["LiOH", "HCl", "LiCl", "H₂O"], balanced: [1, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["NaOH", "H₂SO₄", "Na₂SO₄", "H₂O"], balanced: [2, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["KOH", "H₂SO₄", "K₂SO₄", "H₂O"], balanced: [2, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Ca(OH)₂", "H₂SO₄", "CaSO₄", "H₂O"], balanced: [1, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Mg(OH)₂", "H₂SO₄", "MgSO₄", "H₂O"], balanced: [1, 2, 1, 2], arrowIndex: 2 },
+  { unbalanced: ["NaOH", "H₂CO₃", "Na₂CO₃", "H₂O"], balanced: [2, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["LiOH", "H₂CO₃", "Li₂CO₃", "H₂O"], balanced: [2, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Ba(OH)₂", "H₂SO₄", "BaSO₄", "H₂O"], balanced: [1, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Ca(OH)₂", "H₂CO₃", "CaCO₃", "H₂O"], balanced: [1, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["NaOH", "HNO₃", "NaNO₃", "H₂O"], balanced: [1, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Ni(OH)₂", "HCl", "NiCl₂", "H₂O"], balanced: [1, 2, 1, 2], arrowIndex: 2 },
+  { unbalanced: ["Fe(OH)₃", "HCl", "FeCl₃", "H₂O"], balanced: [1, 3, 1, 3], arrowIndex: 2 },
+  { unbalanced: ["Al(OH)₃", "HCl", "AlCl₃", "H₂O"], balanced: [1, 3, 1, 3], arrowIndex: 2 },
+  { unbalanced: ["Pb(OH)₂", "HNO₃", "Pb(NO₃)₂", "H₂O"], balanced: [1, 2, 1, 2], arrowIndex: 2 },
+  { unbalanced: ["Ba(OH)₂", "H₂CO₃", "BaCO₃", "H₂O"], balanced: [1, 1, 1, 2], arrowIndex: 2 },
+  { unbalanced: ["Ca(OH)₂", "HNO₃", "Ca(NO₃)₂", "H₂O"], balanced: [1, 2, 1, 2], arrowIndex: 2 },
+  { unbalanced: ["LiOH", "H₂SO₄", "Li₂SO₄", "H₂O"], balanced: [2, 1, 1, 2], arrowIndex: 2 },
+  { unbalanced: ["Mg(OH)₂", "HNO₃", "Mg(NO₃)₂", "H₂O"], balanced: [1, 2, 1, 2], arrowIndex: 2 },
+  { unbalanced: ["KOH", "HNO₃", "KNO₃", "H₂O"], balanced: [1, 1, 1, 1], arrowIndex: 2 },
+  { unbalanced: ["Al(OH)₃", "H₂SO₄", "Al₂(SO₄)₃", "H₂O"], balanced: [2, 3, 1, 6], arrowIndex: 2 },
+  { unbalanced: ["KOH", "H₂CO₃", "K₂CO₃", "H₂O"], balanced: [2, 1, 1, 1], arrowIndex: 2 }
+]
+
+  };
+
+  let currentCategory = ''; // Store the current category
+let current = {};
+let usedEquations = [];
+let correctAnswers = 0;
+let totalQuestions = 0;
+
+function selectCategory(category) {
+  // Store the selected category and hide category selection
+  currentCategory = category;
+  document.getElementById('categorySelection').style.display = 'none';
+  document.getElementById('checkAnswerContainer').style.display = 'block';
+  correctAnswers = 0;
+  usedEquations = [];
+  totalQuestions = allEquations[category].length;
+  generateEquation();
+}
+
+function generateEquation() {
+  if (usedEquations.length >= totalQuestions) {
+    showFinalResult();
+    return;
+  }
+
+  let remaining = allEquations[currentCategory].map((_, index) => index).filter(index => !usedEquations.includes(index));
+  let randomIndex = remaining[Math.floor(Math.random() * remaining.length)];
+  usedEquations.push(randomIndex);
+
+  let eq = allEquations[currentCategory][randomIndex];
+  current = eq;
+
+  const container = document.getElementById('equationContainer');
+  container.innerHTML = '';
+
+  eq.unbalanced.forEach((compound, i) => {
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = 1;
+    input.classList.add('input-box');
+    input.value = '';
+    input.id = 'input' + i;
+    container.appendChild(input);
+
+    const label = document.createElement('span');
+    label.textContent = compound;
+    container.appendChild(label);
+
+    if (i === eq.arrowIndex - 1) {
+      container.appendChild(document.createTextNode(' → '));
+    } else if (i < eq.unbalanced.length - 1) {
+      container.appendChild(document.createTextNode(' + '));
+    }
+  });
+
+  document.getElementById('result').innerHTML = '';
+}
+
+function checkAnswer() {
+  const result = document.getElementById('result');
+  let allCorrect = true;
+  const inputs = [];
+
+  for (let i = 0; i < current.balanced.length; i++) {
+    const val = document.getElementById('input' + i).value.trim();
+    const inputValue = val === '' ? 1 : parseInt(val);
+    inputs.push(inputValue);
+    if (inputValue !== current.balanced[i]) {
+      allCorrect = false;
+    }
+  }
+
+  if (allCorrect) {
+    correctAnswers++;
+    result.innerHTML = `<span style="color:green;">✅ Correct!</span>`;
+  } else {
+    let correction = '';
+    current.unbalanced.forEach((compound, i) => {
+      const coeff = current.balanced[i];
+      correction += (coeff > 1 ? coeff : '') + compound;
+      if (i === current.arrowIndex - 1) {
+        correction += ' → ';
+      } else if (i < current.unbalanced.length - 1) {
+        correction += ' + ';
+      }
+    });
+    result.innerHTML = `<span style="color:red;">Correct answer: ${correction}</span>`;
+  }
+
+  setTimeout(generateEquation, 2000); // Move to next equation after 2 seconds
+}
+
+function showFinalResult() {
+  const percentage = (correctAnswers / totalQuestions) * 100;
+  document.getElementById('result').innerHTML = `You got ${correctAnswers} out of ${totalQuestions} correct. (${percentage.toFixed(2)}%)`;
+  document.getElementById('restartOrSelect').style.display = 'block';
+}
+
+function restartQuiz() {
+  // Restart the quiz using the same category
+  correctAnswers = 0;
+  usedEquations = [];
+  generateEquation();
+  document.getElementById('result').innerHTML = '';
+  document.getElementById('restartOrSelect').style.display = 'none';
+}
+
+function selectNewCategory() {
+  // Hide everything except the start menu when a new category is selected
+  document.getElementById('categorySelection').style.display = 'block';
+  document.getElementById('checkAnswerContainer').style.display = 'none';
+  document.getElementById('equationContainer').innerHTML = '';
+  document.getElementById('result').innerHTML = '';
+  document.getElementById('restartOrSelect').style.display = 'none';
+  usedEquations = [];
+}
+
+</script>
+
+</body>
+</html>
