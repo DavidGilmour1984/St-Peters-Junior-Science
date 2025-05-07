@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Drag-and-Drop Cloze Quiz</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      padding: 2em;
+      background-color: #f5f5f5;
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 700px;
+      margin: auto;
+    }
+
+    .question {
+      display: none;
+    }
+
+    .question.active {
+      display: block;
+    }
+
+    .blank {
+      display: inline-block;
+      width: 120px;
+      border-bottom: 2px dashed #999;
+      margin: 0 5px;
+      min-height: 25px;
+      vertical-align: middle;
+      background-color: #f0f0f0;
+      padding: 4px 6px;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    .word-bank {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .draggable {
+      background: #e0e0e0;
+      border-radius: 8px;
+      padding: 10px 15px;
+      cursor: grab;
+      font-size: 1rem;
+      user-select: none;
+      transition: background 0.3s;
+    }
+
+    .draggable:hover {
+      background: #d0d0d0;
+    }
+
+    .correct {
+      background: #a0e6a0 !important;
+    }
+
+    .wrong {
+      background: #e6a0a0 !important;
+    }
+
+    .controls {
+      margin-top: 20px;
+    }
+
+    button {
+      margin-top: 1em;
+      padding: 0.8em 1.6em;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #feedback {
+      margin-top: 1em;
+      font-weight: bold;
+      color: #444;
+    }
+
+    #progress {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #444;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div id="quiz-container"></div>
+    <div id="progress">Progress: 1/15</div> <!-- Progress section -->
+  </div>
+
+  <script>
+  const questions = [
+    {
+      sentence: `Force is a <span class="blank" data-answer="push"></span> or a <span class="blank" data-answer="pull"></span> that can change the motion of an object. Forces are measured in <span class="blank" data-answer="newtons"></span> and can be categorized as <span class="blank" data-answer="contact"></span> forces or <span class="blank" data-answer="non-contact"></span> forces.`,
+      wordBank: ["pull", "non-contact", "newtons", "contact", "push"]
+    },
+    {
+      sentence: `The force of <span class="blank" data-answer="gravity"></span> pulls objects towards the Earth, giving them <span class="blank" data-answer="weight"></span>. Gravitational force is a <span class="blank" data-answer="non-contact"></span> force.`,
+      wordBank: ["non-contact", "gravity", "weight"]
+    },
+    {
+      sentence: `Newton's <span class="blank" data-answer="first"></span> law states that an object will stay at rest or in uniform motion unless acted upon by an external <span class="blank" data-answer="force"></span>.`,
+      wordBank: ["first", "force", "motion"]
+    },
+    {
+      sentence: `Newton's <span class="blank" data-answer="second"></span> law explains that the force acting on an object is equal to its mass times acceleration (<span class="blank" data-answer="F=ma"></span>).`,
+      wordBank: ["second", "F=ma", "force"]
+    },
+    {
+      sentence: `Newton's <span class="blank" data-answer="third"></span> law states that for every action, there is an equal and opposite <span class="blank" data-answer="reaction"></span>.`,
+      wordBank: ["reaction", "third", "force"]
+    },
+    {
+      sentence: `The <span class="blank" data-answer="acceleration"></span> of an object is the rate at which its velocity changes over time. Acceleration is measured in <span class="blank" data-answer="m/s²"></span>.`,
+      wordBank: ["acceleration", "velocity", "m/s²"]
+    },
+    {
+      sentence: `The unit of <span class="blank" data-answer="mass"></span> is kilograms (kg), and the unit of <span class="blank" data-answer="force"></span> is newtons (N). Mass and force are related through Newton's <span class="blank" data-answer="second"></span> law.`,
+      wordBank: ["mass", "second", "force"]
+    },
+    {
+      sentence: `Friction is a <span class="blank" data-answer="contact"></span> force that opposes the motion of an object. It occurs when two <span class="blank" data-answer="surfaces"></span> rub against each other.`,
+      wordBank: ["surfaces", "contact", "force"]
+    },
+    {
+      sentence: `An object in motion will continue moving at a constant speed unless acted upon by a <span class="blank" data-answer="force"></span>. This is described by Newton's <span class="blank" data-answer="first"></span> law.`,
+      wordBank: ["force", "first", "motion"]
+    },
+    {
+      sentence: `The <span class="blank" data-answer="momentum"></span> of an object is the product of its mass and velocity. Momentum is conserved in a <span class="blank" data-answer="collision"></span>.`,
+      wordBank: ["momentum", "velocity", "collision"]
+    },
+    {
+      sentence: `Potential energy is energy stored in an object due to its position. An example is gravitational potential energy when an object is raised above the <span class="blank" data-answer="ground"></span>.`,
+      wordBank: ["energy", "potential", "ground"]
+    },
+    {
+      sentence: `The law of <span class="blank" data-answer="conservation"></span> of energy states that energy cannot be created or destroyed, only transformed from one form to another.`,
+      wordBank: ["conservation", "energy", "form"]
+    },
+    {
+      sentence: `Work is done when a <span class="blank" data-answer="force"></span> causes an object to move. Work is measured in <span class="blank" data-answer="joules"></span>.`,
+      wordBank: ["force", "joules", "work"]
+    },
+    {
+      sentence: `Power is the rate at which work is done. The unit of power is the <span class="blank" data-answer="watt"></span>. Power is calculated as work divided by time.`,
+      wordBank: ["power", "watt", "work"]
+    },
+    {
+      sentence: `In free fall, the only force acting on an object is <span class="blank" data-answer="gravity"></span>, causing it to accelerate at a rate of <span class="blank" data-answer="10m/s²"></span>.`,
+      wordBank: ["gravity", "10m/s²", "fall"]
+    }
+  ];
+
+ let currentIndex = 0;
+
+    function renderQuestion(index) {
+      const q = questions[index];
+      const container = document.getElementById('quiz-container');
+
+      const qDiv = document.createElement('div');
+      qDiv.classList.add('question');
+      if (index === 0) qDiv.classList.add('active');
+
+      const sentenceHTML = `<p>${q.sentence}</p>`;
+      const wordBankHTML = q.wordBank.map(word =>
+        `<div class="draggable" draggable="true" ondragstart="drag(event)" id="word-${word}">${word}</div>`
+      ).join('');
+
+      qDiv.innerHTML = `
+        ${sentenceHTML}
+        <div class="word-bank">${wordBankHTML}</div>
+        <div class="controls">
+          <button onclick="checkAnswers(this)">Check Answer</button>
+        </div>
+      `;
+
+      container.appendChild(qDiv);
+
+      const blanks = qDiv.querySelectorAll('.blank');
+      blanks.forEach(blank => {
+        blank.setAttribute('ondragover', 'allowDrop(event)');
+        blank.setAttribute('ondrop', 'drop(event)');
+      });
+
+      updateProgress(); // Update progress when rendering each question
+    }
+
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+
+    function drag(ev) {
+      ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+      ev.preventDefault();
+      const data = ev.dataTransfer.getData("text");
+      const dragged = document.getElementById(data);
+
+      // If already filled, remove the old word
+      if (ev.target.firstChild) {
+        ev.target.innerHTML = '';
+      }
+
+      const clone = dragged.cloneNode(true);
+      clone.setAttribute("draggable", "false");
+      clone.style.cursor = "default";
+      clone.classList.remove("draggable");
+      ev.target.innerHTML = '';
+      ev.target.appendChild(clone);
+    }
+
+    function checkAnswers(button) {
+      const questionDiv = button.closest('.question');
+      const blanks = questionDiv.querySelectorAll('.blank');
+      let allCorrect = true;
+
+      blanks.forEach(blank => {
+        const correctAnswer = blank.dataset.answer.toLowerCase();
+        const userAnswer = blank.textContent.trim().toLowerCase();
+
+        if (userAnswer === correctAnswer) {
+          blank.classList.add('correct');
+        } else {
+          allCorrect = false;
+        }
+      });
+
+      if (allCorrect) {
+        setTimeout(() => nextQuestion(), 600);
+      } else {
+        // Reset wrong answers after short delay
+        setTimeout(() => {
+          blanks.forEach(blank => {
+            blank.innerHTML = '';
+            blank.style.borderColor = '#000';
+            blank.classList.remove('correct');
+          });
+          // Re-add word bank
+          const wordBank = questionDiv.querySelector('.word-bank');
+          wordBank.innerHTML = '';
+          const words = questions[currentIndex].wordBank;
+          words.forEach(word => {
+            const wordDiv = document.createElement('div');
+            wordDiv.className = 'draggable';
+            wordDiv.draggable = true;
+            wordDiv.id = `word-${word}`;
+            wordDiv.ondragstart = drag;
+            wordDiv.textContent = word;
+            wordBank.appendChild(wordDiv);
+          });
+        }, 800);
+      }
+    }
+
+    function nextQuestion() {
+      const questionsDivs = document.querySelectorAll('.question');
+      questionsDivs[currentIndex].classList.remove('active');
+      currentIndex++;
+      if (currentIndex < questions.length) {
+        questionsDivs[currentIndex].classList.add('active');
+      } else {
+        document.getElementById('quiz-container').innerHTML = "<h2>Ka pai! You’ve finished the quiz!</h2>";
+      }
+      updateProgress(); // Update progress when moving to next question
+    }
+
+    function updateProgress() {
+      const progressElement = document.getElementById('progress');
+      progressElement.textContent = `Progress: ${currentIndex + 1}/${questions.length}`;
+    }
+
+    // Render all questions at load
+    questions.forEach((_, i) => renderQuestion(i)); 
+    </script>
+</body>
+</html>
