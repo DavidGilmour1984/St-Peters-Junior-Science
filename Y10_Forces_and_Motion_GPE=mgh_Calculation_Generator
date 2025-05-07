@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Physics Formula Quiz</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      padding: 2em;
+      background-color: #f5f5f5;
+      text-align: center;
+    }
+    .card {
+      background: white;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      margin: auto;
+    }
+    button {
+      margin: 1em;
+      padding: 1em 2em;
+      font-size: 1rem;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      background-color: #007BFF;
+      color: white;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .hidden {
+      display: none;
+    }
+    #working, #answer {
+      margin-top: 1em;
+      font-size: 1.2em;
+      color: #333;
+    }
+    #feedback {
+      margin-top: 1em;
+      font-size: 1.2em;
+      color: #d9534f;
+    }
+    #correct {
+      color: #5bc0de;
+    }
+    select, #answerInput {
+      font-size: 1.2em;
+      padding: 0.25em;
+      margin-top: 1em;
+      border-radius: 8px;
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>GPE=mgh</h2>
+    <div id="question"></div>
+    <input type="text" id="answerInput" placeholder="Answer to 2dp" />
+    <select id="unitSelect">
+      <option value="" disabled selected>Select unit</option>
+      <option value="J">J</option>
+      <option value="kg">kg</option>
+      <option value="m">m</option>
+      <option value="ms⁻²">ms⁻²</option>
+    </select>
+    <button onclick="checkAnswer()">Submit Answer</button>
+    <div id="feedback" class="hidden"></div>
+    <div id="tally">Correct answers: <span id="correctCount">0</span></div>
+  </div>
+
+  <script>
+    const g = 10; // Gravitational acceleration (m/s²)
+    let current = {};
+    let correctCount = 0;
+
+    function getRandom(min, max) {
+      return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+
+    function choose(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    function swedishRound(number) {
+      return Math.round(number * 100) / 100; // Round to 2 decimal places
+    }
+
+    function generateQuestion() {
+      document.getElementById('feedback').classList.add('hidden');
+
+      // Define the formulas and rearranged versions for GPE
+      const formulas = [
+        { equation: 'GPE = m * g * h', type: 'GPE', name: 'Gravitational Potential Energy' },
+        { equation: 'm = GPE / (g * h)', type: 'mass', name: 'Mass from GPE' },
+        { equation: 'h = GPE / (m * g)', type: 'height', name: 'Height from GPE' },
+        { equation: 'g = GPE / (m * h)', type: 'gravity', name: 'Gravitational acceleration from GPE' }
+      ];
+
+      const contexts = [
+        'ball', 'rock', 'elevator', 'skydiver', 'spaceship', 'tower', 'mountain', 'plane'
+      ];
+
+      const formula = choose(formulas);
+      const context = choose(contexts);
+
+      let question = '', answer = '', correctAnswer = '', correctUnit = '';
+
+      if (formula.type === 'GPE') {
+        const m = swedishRound(getRandom(5, 50));  // mass in kg
+        const h = swedishRound(getRandom(10, 100)); // height in meters
+        const gpe = swedishRound(m * g * h); // gravitational potential energy in joules
+        question = `A ${context} with mass ${m} kg is at a height of ${h} meters. What is its gravitational potential energy?`;
+        correctAnswer = gpe;
+        correctUnit = "J";
+      } else if (formula.type === 'mass') {
+        const gpe = swedishRound(getRandom(500, 5000)); // gravitational potential energy in joules
+        const h = swedishRound(getRandom(10, 100)); // height in meters
+        const m = swedishRound(gpe / (g * h)); // mass in kg
+        question = `An object with gravitational potential energy of ${gpe} J is at a height of ${h} meters. What is its mass?`;
+        correctAnswer = m;
+        correctUnit = "kg";
+      } else if (formula.type === 'height') {
+        const gpe = swedishRound(getRandom(500, 5000)); // gravitational potential energy in joules
+        const m = swedishRound(getRandom(5, 50)); // mass in kg
+        const h = swedishRound(gpe / (m * g)); // height in meters
+        question = `An object with mass ${m} kg has a gravitational potential energy of ${gpe} J. What is its height?`;
+        correctAnswer = h;
+        correctUnit = "m";
+      } else if (formula.type === 'gravity') {
+        const gpe = swedishRound(getRandom(500, 5000)); // gravitational potential energy in joules
+        const m = swedishRound(getRandom(5, 50)); // mass in kg
+        const h = swedishRound(getRandom(10, 100)); // height in meters
+        const gr = swedishRound(gpe / (m * h)); // gravitational acceleration in m/s²
+        question = `An object with mass ${m} kg is at a height of ${h} meters, having ${gpe} J of gravitational potential energy. What is the gravitational acceleration?`;
+        correctAnswer = gr;
+        correctUnit = "ms⁻²";
+      }
+
+      current = { question, correctAnswer, correctUnit };
+      document.getElementById('question').innerText = question;
+    }
+
+    function checkAnswer() {
+      const answerInput = parseFloat(document.getElementById('answerInput').value).toFixed(2);
+      const unitSelect = document.getElementById('unitSelect').value;
+      const feedback = document.getElementById('feedback');
+      const correctAnswerRounded = current.correctAnswer.toFixed(2);
+
+      if (answerInput === correctAnswerRounded && unitSelect === current.correctUnit) {
+        correctCount++;
+        feedback.textContent = `Correct! The answer is ${current.correctAnswer} ${unitSelect}.`;
+        feedback.style.color = "#5bc0de"; // Correct feedback color
+      } else {
+        feedback.textContent = `Incorrect. The correct answer is ${current.correctAnswer} ${current.correctUnit}.`;
+        feedback.style.color = "#d9534f"; // Incorrect feedback color
+      }
+
+      document.getElementById('correctCount').innerText = correctCount;
+
+      feedback.classList.remove('hidden');
+      setTimeout(() => {
+        generateQuestion();
+        document.getElementById('answerInput').value = '';
+        document.getElementById('unitSelect').selectedIndex = 0; // Reset to the first option
+      }, 2000); // Generate a new question after 2 seconds
+    }
+
+    generateQuestion();
+  </script>
+</body>
+</html>
