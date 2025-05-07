@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Genetics Word Find</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      background: #f4f4f4;
+      text-align: center;
+      padding: 2em;
+    }
+
+    .wordfind-card {
+      background: #fff;
+      padding: 2em;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h2 {
+      margin-bottom: 1em;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(15, 30px);
+      grid-gap: 2px;
+      justify-content: center;
+      margin-bottom: 1em;
+      user-select: none;
+    }
+
+    .grid div {
+      width: 30px;
+      height: 30px;
+      background-color: #e0e0e0;
+      font-weight: bold;
+      color: #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .selected {
+      background-color: #007bff !important;
+      color: white;
+    }
+
+    .found {
+      background-color: #28a745 !important;
+      color: white;
+    }
+
+    .word-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .word-item {
+      background-color: #28a745;
+      color: white;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    .word-item:hover {
+      background-color: #1e7e34;
+    }
+
+    #hint {
+      margin-top: 1px;
+      font-style: italic;
+      font-size: 1rem;
+      color: #444;
+    }
+
+    .instructions-button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-size: 1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 20px;
+    }
+
+    .instructions-button:hover {
+      background-color: #0056b3;
+    }
+
+    .instructions-text {
+      display: none;
+      margin-top: 20px;
+      font-size: 1rem;
+      color: #333;
+      background: #e8f0ff;
+      padding: 1em;
+      border-radius: 10px;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .timer-controls {
+      margin-bottom: 20px;
+    }
+
+    #timerDisplay {
+      font-weight: bold;
+      font-size: 1rem;
+      margin-left: 10px;
+      color: #222;
+    }
+  </style>
+</head>
+<body>
+  <div class="wordfind-card">
+    <h2>Genetics Word Find</h2>
+
+    <div class="timer-controls">
+      <button class="instructions-button" onclick="toggleInstructions()">Instructions</button>
+      <label>
+        <input type="checkbox" id="enableTimer" onchange="toggleTimer()"> Enable Timer
+      </label>
+      <span id="timerDisplay"></span>
+    </div>
+
+    <div class="instructions-text" id="instructions">
+      1. Click and drag to highlight a word in the grid.<br>
+      2. After selecting a word, click the matching definition below.<br>
+      3. If correct, the word will turn green and the definition will disappear.<br>
+      4. If incorrect, your selection will be cleared and you'll need to try again.<br>
+      5. If "Enable Timer" is checked, the timer starts when you find your first word.
+    </div>
+
+    <div class="grid" id="grid"></div>
+    <div class="word-list" id="wordList"></div>
+  </div>
+
+<script>
+  const words = [
+    { word: "Inheritance", hint: "Passing traits from parents to offspring" },
+    { word: "DNA", hint: "Carries genetic information" },
+    { word: "Nucleotide", hint: "Building block of DNA" },
+    { word: "Basepairing", hint: "A-T, G-C in DNA structure" },
+    { word: "Genes", hint: "Sections of DNA that codes for a trait" },
+    { word: "Allele", hint: "Different forms of a gene" },
+    { word: "Dominant", hint: "Trait that masks a recessive one" },
+    { word: "Recessive", hint: "Trait hidden unless two copies are present" },
+    { word: "PunnettSquare", hint: "Diagram to predict genetic crosses" },
+    { word: "Genotype", hint: "Genetic makeup (e.g. Bb)" },
+    { word: "Phenotype", hint: "Observable characteristics (e.g. brown eyes)" },
+    { word: "Geneticvariation", hint: "Differences in DNA between individuals" },
+    { word: "Diversity", hint: "Variety of traits in a population" },
+    { word: "EndemicSpecies", hint: "Species found only in one location" },
+    { word: "Mutation", hint: "Change in the DNA sequence" },
+    { word: "Mutagen", hint: "Agent that causes mutations" }
+  ];
+
+  const gridSize = 15;
+  const grid = document.getElementById("grid");
+  const wordList = document.getElementById("wordList");
+  const timerDisplay = document.getElementById("timerDisplay");
+  let filledGrid = Array(gridSize * gridSize).fill('');
+  const cellElements = [];
+  const selectedCells = [];
+
+  let timerEnabled = false;
+  let timerStarted = false;
+  let timer = null;
+  let secondsElapsed = 0;
+  let wordsFound = 0;
+
+  function toggleInstructions() {
+    const box = document.getElementById("instructions");
+    box.style.display = box.style.display === "block" ? "none" : "block";
+  }
+
+  function toggleTimer() {
+    timerEnabled = document.getElementById("enableTimer").checked;
+    if (!timerEnabled) {
+      clearInterval(timer);
+      timerDisplay.textContent = "";
+      timerStarted = false;
+      secondsElapsed = 0;
+    }
+  }
+
+  function startTimer() {
+    if (timerEnabled && !timerStarted) {
+      timerStarted = true;
+      timer = setInterval(() => {
+        secondsElapsed++;
+        const minutes = Math.floor(secondsElapsed / 60);
+        const seconds = secondsElapsed % 60;
+        timerDisplay.textContent = `Time: ${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      }, 1000);
+    }
+  }
+
+  function stopTimer() {
+    clearInterval(timer);
+    timerDisplay.textContent += " ✅";
+  }
+
+  function mulberry32(seed) {
+    return function() {
+      let t = seed += 0x6D2B79F5;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  const rand = mulberry32(12345);
+
+  function placeWords() {
+    const half = Math.ceil(words.length / 2);
+    words.forEach(({ word }, index) => {
+      const clean = word.replace(/\s+/g, "").toUpperCase();
+      let placed = false;
+      for (let attempts = 0; attempts < 100 && !placed; attempts++) {
+        const isVertical = index >= half;
+        const maxStartRow = isVertical ? gridSize - clean.length : gridSize;
+        const maxStartCol = isVertical ? gridSize : gridSize - clean.length;
+        const row = Math.floor(rand() * maxStartRow);
+        const col = Math.floor(rand() * maxStartCol);
+        let canPlace = true;
+        for (let i = 0; i < clean.length; i++) {
+          const r = row + (isVertical ? i : 0);
+          const c = col + (isVertical ? 0 : i);
+          const idx = r * gridSize + c;
+          if (filledGrid[idx] && filledGrid[idx] !== clean[i]) {
+            canPlace = false;
+            break;
+          }
+        }
+        if (canPlace) {
+          for (let i = 0; i < clean.length; i++) {
+            const r = row + (isVertical ? i : 0);
+            const c = col + (isVertical ? 0 : i);
+            const idx = r * gridSize + c;
+            filledGrid[idx] = clean[i];
+          }
+          placed = true;
+        }
+      }
+    });
+
+    for (let i = 0; i < filledGrid.length; i++) {
+      if (!filledGrid[i]) {
+        filledGrid[i] = String.fromCharCode(65 + Math.floor(rand() * 26));
+      }
+    }
+  }
+
+  function renderGrid() {
+    grid.innerHTML = "";
+    filledGrid.forEach((letter, index) => {
+      const cell = document.createElement("div");
+      cell.textContent = letter;
+      cell.dataset.index = index;
+      grid.appendChild(cell);
+      cellElements[index] = cell;
+    });
+  }
+
+function renderHints() {
+  wordList.innerHTML = "";
+
+  // Clone and shuffle the array of words
+  const shuffled = [...words];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(rand() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+
+  // Render hints in shuffled order
+  shuffled.forEach(({ word, hint }) => {
+    const btn = document.createElement("div");
+    btn.className = "word-item";
+    btn.textContent = hint;
+    btn.dataset.word = word.replace(/\s+/g, "").toUpperCase();
+    wordList.appendChild(btn);
+  });
+}
+
+
+  function setupSelection() {
+    let isSelecting = false;
+
+    cellElements.forEach(cell => {
+      cell.addEventListener("mousedown", () => {
+        isSelecting = true;
+        clearSelection();
+        cell.classList.add("selected");
+        selectedCells.push(cell);
+      });
+
+      cell.addEventListener("mouseenter", () => {
+        if (isSelecting && !selectedCells.includes(cell)) {
+          cell.classList.add("selected");
+          selectedCells.push(cell);
+        }
+      });
+    });
+
+    document.addEventListener("mouseup", () => {
+      isSelecting = false;
+    });
+
+    wordList.addEventListener("click", e => {
+      if (!e.target.classList.contains("word-item")) return;
+
+      const selectedWord = selectedCells.map(c => c.textContent).join('');
+      const reversed = selectedWord.split('').reverse().join('');
+      const correctWord = e.target.dataset.word;
+
+      if (selectedWord === correctWord || reversed === correctWord) {
+        selectedCells.forEach(c => {
+          c.classList.remove("selected");
+          c.classList.add("found");
+        });
+        e.target.remove();
+        selectedCells.length = 0;
+
+        wordsFound++;
+        if (wordsFound === 1) startTimer();
+        if (wordsFound === words.length) stopTimer();
+      } else {
+        clearSelection();
+      }
+    });
+  }
+
+  function clearSelection() {
+    selectedCells.forEach(cell => cell.classList.remove("selected"));
+    selectedCells.length = 0;
+  }
+
+  placeWords();
+  renderGrid();
+  renderHints();
+  setupSelection();
+</script>
+</body>
+</html>
