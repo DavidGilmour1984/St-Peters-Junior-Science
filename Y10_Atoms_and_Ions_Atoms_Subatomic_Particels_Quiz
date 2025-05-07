@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Atom Structure Quiz</title>
+ <style>
+  body {
+    font-family: Helvetica, sans-serif;
+    padding: 0.2em;
+    background-color: #f5f5f5;
+    text-align: center;
+  }
+
+  .card {
+    background: white;
+    padding: 0.2em;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: auto;
+  }
+
+  input[type="number"],
+  input[type="text"] {
+    width: 90px;
+    height: 40px;
+    font-size: 1.2em;
+    text-align: center;
+    margin: 0.2em;
+  }
+
+  .incorrect {
+    border: 2px solid red;
+    background-color: #ffe5e5;
+  }
+
+  button {
+    margin-top: 0.2em;
+    padding: 0.8em 1.6em;
+    font-size: 1rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+    transition: background 0.3s;
+  }
+
+  button:hover {
+    background-color: #0056b3;
+  }
+
+  #feedback {
+    margin-top: 0.2em;
+    font-weight: bold;
+  }
+
+  /* Make the question text larger */
+  #question {
+    font-size: 1.5em; /* Adjust the size as needed */
+    margin-bottom: 0.2em;
+  }
+
+  /* Make the score and the word 'Score' larger */
+  #score-container {
+    font-size: 2em; /* Adjust the size as needed */
+  }
+
+  /* Center button and score */
+  #button-score-container {
+    display: flex;
+    font-size: 1.5em;
+    justify-content: center; /* Center the content horizontally */
+    align-items: center;
+    gap: 1em; /* Add space between button and score */
+    margin-top: 0.2em;
+  }
+</style>
+
+</head>
+<body>
+<div class="card">
+  <h2>Atoms Subatomic Particles Quiz</h2>
+  <img src="Y10_Atoms_and_Ions_Subatomic_Particels_Quiz.jpg" alt="Periodic Table" style="max-width: 100%; height: auto; margin-bottom: 0.2em;">
+  <p id="question"></p>
+
+  <div>
+    <label>P= <input type="number" id="protons"></label>
+    <label>N= <input type="number" id="neutrons"></label>
+    <label>E= <input type="number" id="electrons"></label>
+    <label>E Config= <input type="text" id="configuration" placeholder="e.g. 2,8,1"></label>
+  </div>
+
+  <!-- Button and score container, now centered -->
+  <div id="button-score-container">
+    <button onclick="checkAnswer()">Check Answer</button>
+    <p style="margin: 0;">Score: <span id="score">0</span></p>
+  <p id="feedback"></p>
+  </div>
+</div>
+
+  <script>
+  const atoms = [
+  { symbol: 'H', name: 'Hydrogen', protons: 1, neutrons: 0, electrons: 1, config: '1' },
+  { symbol: 'He', name: 'Helium', protons: 2, neutrons: 2, electrons: 2, config: '2' },
+  { symbol: 'Li', name: 'Lithium', protons: 3, neutrons: 4, electrons: 3, config: '2,1' },
+  { symbol: 'Be', name: 'Beryllium', protons: 4, neutrons: 5, electrons: 4, config: '2,2' },
+  { symbol: 'B', name: 'Boron', protons: 5, neutrons: 6, electrons: 5, config: '2,3' },
+  { symbol: 'C', name: 'Carbon', protons: 6, neutrons: 6, electrons: 6, config: '2,4' },
+  { symbol: 'N', name: 'Nitrogen', protons: 7, neutrons: 7, electrons: 7, config: '2,5' },
+  { symbol: 'O', name: 'Oxygen', protons: 8, neutrons: 8, electrons: 8, config: '2,6' },
+  { symbol: 'F', name: 'Fluorine', protons: 9, neutrons: 10, electrons: 9, config: '2,7' },
+  { symbol: 'Ne', name: 'Neon', protons: 10, neutrons: 10, electrons: 10, config: '2,8' },
+  { symbol: 'Na', name: 'Sodium', protons: 11, neutrons: 12, electrons: 11, config: '2,8,1' },
+  { symbol: 'Mg', name: 'Magnesium', protons: 12, neutrons: 12, electrons: 12, config: '2,8,2' },
+  { symbol: 'Al', name: 'Aluminium', protons: 13, neutrons: 14, electrons: 13, config: '2,8,3' },
+  { symbol: 'Si', name: 'Silicon', protons: 14, neutrons: 14, electrons: 14, config: '2,8,4' },
+  { symbol: 'P', name: 'Phosphorus', protons: 15, neutrons: 16, electrons: 15, config: '2,8,5' },
+  { symbol: 'S', name: 'Sulfur', protons: 16, neutrons: 16, electrons: 16, config: '2,8,6' },
+  { symbol: 'Cl', name: 'Chlorine', protons: 17, neutrons: 18, electrons: 17, config: '2,8,7' },
+  { symbol: 'Ar', name: 'Argon', protons: 18, neutrons: 22, electrons: 18, config: '2,8,8' },
+  { symbol: 'K', name: 'Potassium', protons: 19, neutrons: 20, electrons: 19, config: '2,8,8,1' },
+  { symbol: 'Ca', name: 'Calcium', protons: 20, neutrons: 20, electrons: 20, config: '2,8,8,2' },
+];
+
+  let currentAtom, score = 0;
+
+  function newQuestion() {
+    currentAtom = atoms[Math.floor(Math.random() * atoms.length)];
+    document.getElementById("question").textContent = `Subatomic particles in ${currentAtom.name} (${currentAtom.symbol})?`;
+    ["protons", "neutrons", "electrons", "configuration"].forEach(id => {
+      document.getElementById(id).value = "";
+      document.getElementById(id).classList.remove("incorrect");
+    });
+    document.getElementById("feedback").textContent = "";
+  }
+
+  function checkAnswer() {
+    const protons = parseInt(document.getElementById("protons").value);
+    const neutrons = parseInt(document.getElementById("neutrons").value);
+    const electrons = parseInt(document.getElementById("electrons").value);
+    const config = document.getElementById("configuration").value.trim();
+    let correct = true;
+
+    if (protons !== currentAtom.protons) {
+      document.getElementById("protons").classList.add("incorrect");
+      correct = false;
+    } else document.getElementById("protons").classList.remove("incorrect");
+
+    if (neutrons !== currentAtom.neutrons) {
+      document.getElementById("neutrons").classList.add("incorrect");
+      correct = false;
+    } else document.getElementById("neutrons").classList.remove("incorrect");
+
+    if (electrons !== currentAtom.electrons) {
+      document.getElementById("electrons").classList.add("incorrect");
+      correct = false;
+    } else document.getElementById("electrons").classList.remove("incorrect");
+
+    if (config !== currentAtom.config) {
+      document.getElementById("configuration").classList.add("incorrect");
+      correct = false;
+    } else document.getElementById("configuration").classList.remove("incorrect");
+
+    if (correct) {
+      score++;
+      document.getElementById("score").textContent = score;
+      setTimeout(newQuestion, 1500);
+    } else {
+      document.getElementById("feedback").textContent = " ";
+    }
+  }
+
+  window.onload = newQuestion;
+</script>
+
+</body>
+</html>
