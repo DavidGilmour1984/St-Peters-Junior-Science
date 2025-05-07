@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>DNA Diagram Quiz</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      background: #f4f4f4;
+      text-align: center;
+      padding: 2em;
+    }
+
+    .quiz-card {
+      background: #fff;
+      padding: 2em;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 800px;
+      margin: auto;
+      position: relative;
+    }
+
+    .diagram-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .pointer {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-bottom: 20px solid red;
+      animation: bounce 1s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    #timer-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      margin: 20px auto;
+    }
+
+    #timer {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #333;
+    }
+
+    #restart-btn,
+    .instructions-button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background-color: #28a745;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    #restart-btn:hover,
+    .instructions-button:hover {
+      background-color: #218838;
+    }
+
+    .choices {
+      margin-top: 20px;
+    }
+
+    .choices button {
+      margin: 0.5em;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    .choices button:hover {
+      background-color: #0056b3;
+    }
+
+    #feedback {
+      margin-top: 1em;
+      font-weight: bold;
+    }
+
+    .instructions-text {
+      display: none;
+      margin-top: 20px;
+      font-size: 1rem;
+      color: #333;
+      background: #e8f0ff;
+      padding: 1em;
+      border-radius: 10px;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-card">
+    <h2>DNA Structure Diagram Quiz</h2>
+
+    <div class="diagram-container">
+      <img id="diagram" src="Y10_Genetics_DNA_Structure_Diagram_Quiz.jpg" alt="DNA Structure Diagram" width="600" />
+      <div id="pointer" class="pointer"></div>
+    </div>
+
+    <div id="timer-container">
+      <div id="timer">Time: 0.00s</div>
+      <button id="restart-btn" onclick="restartQuiz()">Restart</button>
+      <button class="instructions-button" onclick="toggleInstructions()">Instructions</button>
+    </div>
+
+    <div class="instructions-text" id="instructions">
+      1. A red pointer will appear on the diagram.<br>
+      2. Click the correct label for the structure the pointer is indicating.<br>
+      3. If correct, you’ll move to the next question.<br>
+      4. If incorrect, try again until correct.<br>
+      5. The timer starts when you select your first answer.<br>
+      6. Click "Restart" to reset the quiz and timer.
+    </div>
+
+    <div class="choices" id="choices"></div>
+    <div id="feedback"></div>
+  </div>
+
+ <script>
+  function toggleInstructions() {
+    const instructions = document.getElementById("instructions");
+    instructions.style.display = instructions.style.display === "block" ? "none" : "block";
+  }
+
+  function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  const questions = [
+    { label: "Nucleus", pointer: { top: 145, left: 90 }, choices: ["Nucleotide", "Double helix", "Nucleus", "Phosphate"] },
+    { label: "Nucleotide", pointer: { top: 440, left: 430 }, choices: ["Nucleotide", "Double helix", "Chromosome", "Cell"] },
+    { label: "Double helix", pointer: { top: 430, left: 220 }, choices: ["Guanine", "Nucleotide", "Double helix", "Gene"] },
+    { label: "Chromosome", pointer: { top: 355, left: 260 }, choices: ["Cell", "Gene", "Chromosome", "Cytosine"] },
+    { label: "Cell", pointer: { top: 190, left: 70 }, choices: ["Double helix", "Cell", "Chromosome", "Gene"] },
+    { label: "Adenine", pointer: { top: 575, left: 70 }, choices: ["cell", "Cytosine", "Gene", "Adenine"] },
+    { label: "Guanine", pointer: { top: 584, left: 45 }, choices: ["Chromosome", "Cytosine", "Guanine", "Cell"] },
+    { label: "Gene", pointer: { top: 620, left: 180 }, choices: ["Guanine", "Nucleotide", "Gene", "Double helix"] },
+    { label: "DNA", pointer: { top: 285, left: 95 }, choices: ["Cell", "Chromosome", "DNA", "Gene"] },
+    { label: "Phosphate", pointer: { top: 365, left: 385 }, choices: ["Phosphate", "Sugar", "Base", "Nucleotide"] },
+    { label: "Sugar", pointer: { top: 400, left: 427 }, choices: ["Base", "Phosphate", "Sugar", "Gene"] },
+    { label: "Base", pointer: { top: 385, left: 475 }, choices: ["Base", "Cytosine", "Guanine", "Phosphate"] }
+  ];
+
+  shuffleArray(questions);
+
+  let current = 0;
+  let seconds = 0;
+  let timerStarted = false;
+  let timerInterval;
+
+  const pointer = document.getElementById("pointer");
+  const choicesDiv = document.getElementById("choices");
+  const feedback = document.getElementById("feedback");
+  const timerDiv = document.getElementById("timer");
+
+  function setButtonsEnabled(enabled) {
+    const buttons = choicesDiv.querySelectorAll("button");
+    buttons.forEach(btn => btn.disabled = !enabled);
+  }
+
+  function loadQuestion() {
+    const q = questions[current];
+    pointer.style.top = q.pointer.top + "px";
+    pointer.style.left = q.pointer.left + "px";
+
+    choicesDiv.innerHTML = "";
+    const shuffledChoices = [...q.choices];
+    shuffleArray(shuffledChoices);
+
+    shuffledChoices.forEach(choice => {
+      const btn = document.createElement("button");
+      btn.textContent = choice;
+      btn.onclick = () => {
+        if (!timerStarted) {
+          timerStarted = true;
+          timerInterval = setInterval(() => {
+            seconds += 0.01;
+            timerDiv.textContent = `Time: ${seconds.toFixed(2)}s`;
+          }, 10);
+        }
+
+        setButtonsEnabled(false); // disable during delay
+
+        if (choice === q.label) {
+          feedback.textContent = "Correct!";
+          feedback.style.color = "green";
+          setTimeout(() => {
+            current++;
+            if (current < questions.length) {
+              loadQuestion();
+              feedback.textContent = "";
+            } else {
+              clearInterval(timerInterval);
+              feedback.textContent = `Well done! Quiz complete in ${seconds.toFixed(2)} seconds.`;
+            }
+          }, 100);
+        } else {
+          feedback.textContent = "Try again!";
+          feedback.style.color = "red";
+          setTimeout(() => {
+            setButtonsEnabled(true);
+          }, 2000);
+        }
+      };
+      choicesDiv.appendChild(btn);
+    });
+  }
+
+  function restartQuiz() {
+    current = 0;
+    seconds = 0;
+    clearInterval(timerInterval);
+    timerStarted = false;
+    timerDiv.textContent = "Time: 0.00s";
+    feedback.textContent = "";
+    shuffleArray(questions);
+    loadQuestion();
+  }
+
+  loadQuestion();
+</script>
+
+</body>
+</html>
