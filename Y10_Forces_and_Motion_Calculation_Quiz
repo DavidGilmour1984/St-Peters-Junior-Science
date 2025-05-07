@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Physics Formula Quiz</title>
+<style>
+  body {
+    font-family: Helvetica, sans-serif;
+    padding: 2em;
+    background-color: #f5f5f5;
+    text-align: center;
+  }
+  .card {
+    background: white;
+    padding: 2em;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: auto;
+  }
+  button {
+    margin: 1em;
+    padding: 0.5em 1.2em;
+    font-size: 1.2rem;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    background-color: #007BFF;
+    color: white;
+    transition: background 0.3s;
+  }
+  button:hover {
+    background-color: #0056b3;
+  }
+  .hidden {
+    display: none;
+  }
+  #working, #answer {
+    margin-top: 1em;
+    font-size: 1.2em;
+    color: #333;
+  }
+  #feedback {
+    margin-top: 1em;
+    font-size: 1.2em;
+    color: #d9534f;
+  }
+  #correct {
+    color: #5bc0de;
+  }
+  #question {
+  font-size: 1.2em;  /* Increase the font size */
+  color: #333;  /* Optional: adjust the color of the question text */
+}
+  select, #answerInput {
+    font-size: 1.2em;  /* Same font size for both */
+    padding: 0.25em;   /* Reduced padding */
+    margin-top: 1em;
+    border-radius: 8px;
+    width: 200px;      /* Optional: control the width */
+  }
+</style>
+
+</head>
+<body>
+  <div class="card">
+    <h2>Physics Formula Quiz</h2>
+    <div id="question"></div>
+    <input type="text" id="answerInput" placeholder="Answer to 0dp" />
+    <select id="unitSelect">
+      <option value="" disabled selected>Select unit</option>
+      <option value="ms⁻¹">ms⁻¹</option>
+      <option value="seconds">s</option>
+      <option value="ms⁻²">ms⁻²</option>
+      <option value="N">N</option>
+      <option value="kg">kg</option>
+    </select>
+    <button onclick="checkAnswer()">Submit Answer</button>
+    <div id="feedback" class="hidden"></div>
+    <div id="tally">Correct answers: <span id="correctCount">0</span></div>
+  </div>
+
+  <script>
+    const g = 10;
+    let current = {};
+    let correctCount = 0;
+
+    // Helper functions
+    function getRandom(min, max) {
+      return Math.floor(Math.random() * (max - min + 1) + min); // No decimals
+    }
+
+    function choose(arr) {
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    // Swedish rounding: remove decimal places (round to the nearest whole number)
+    function swedishRound(number) {
+      return Math.round(number); // Round to nearest whole number
+    }
+
+    function generateQuestion() {
+      document.getElementById('feedback').classList.add('hidden');
+
+      // Define formulas
+      const formulas = [
+        { equation: 'v = d / t', type: 'velocity' },
+        { equation: 't = d / v', type: 'time' },
+        { equation: 'a = v / t', type: 'acceleration' },
+        { equation: 't = v / a', type: 'time' },
+        { equation: 'f = m * a', type: 'force' },
+        { equation: 'a = f / m', type: 'acceleration' },
+        { equation: 'w = m * g', type: 'weight' },
+        { equation: 'm = w / g', type: 'mass' }
+      ];
+
+      // 20+ diverse contexts
+      const contexts = [
+        'cheetah', 'elevator', 'cart', 'rocket', 'car', 'plane', 'cyclist', 'skier', 'ball', 'ferris wheel', 
+        'rocketship', 'moon lander', 'bicycle', 'parachute', 'bowling ball', 'train', 'trolley', 'pendulum', 'submarine', 'spaceship'
+      ];
+
+      // Randomize selection
+      const formula = choose(formulas);
+      const context = choose(contexts);
+
+      let question = '', answer = '', correctAnswer = '', correctUnit = '';
+
+      // Calculate values based on the formula
+      if (formula.type === 'velocity') {
+        const d = swedishRound(getRandom(50, 200));
+        const t = swedishRound(getRandom(2, 10));
+        const v = swedishRound(d / t);
+        question = `A ${context} travels ${d} meters in ${t} seconds. What is its velocity?`;
+        correctAnswer = v;
+        correctUnit = "ms⁻¹";
+      } else if (formula.type === 'time') {
+        const d = swedishRound(getRandom(100, 300));
+        const v = swedishRound(getRandom(10, 40));
+        const t = swedishRound(d / v);
+        question = `A ${context} moves ${d} meters at ${v} ms⁻¹. How long did it take?`;
+        correctAnswer = t;
+        correctUnit = "seconds";
+      } else if (formula.type === 'acceleration') {
+        const v = swedishRound(getRandom(10, 30));
+        const t = swedishRound(getRandom(2, 5));
+        const a = swedishRound(v / t);
+        question = `A ${context} accelerates from 0 to ${v} ms⁻¹ in ${t} seconds. What is its acceleration?`;
+        correctAnswer = a;
+        correctUnit = "ms⁻²";
+      } else if (formula.type === 'force') {
+        const m = swedishRound(getRandom(2, 30));
+        const a = swedishRound(getRandom(3, 9));
+        const f = swedishRound(m * a);
+        question = `A ${context} with mass ${m} kg experiences an acceleration of ${a} ms⁻². What is the force acting on it?`;
+        correctAnswer = f;
+        correctUnit = "N";
+      } else if (formula.type === 'weight') {
+        const m = swedishRound(getRandom(5, 50));
+        const w = swedishRound(m * g);
+        question = `What is the weight of a ${m} kg ${context} on Earth (g = 10)?`;
+        correctAnswer = w;
+        correctUnit = "N";
+      } else if (formula.type === 'mass') {
+        const w = swedishRound(getRandom(100, 500));
+        const m = swedishRound(w / g);
+        question = `A ${context} weighs ${w} N on Earth. What is its mass?`;
+        correctAnswer = m;
+        correctUnit = "kg";
+      }
+
+      // Store current question data
+      current = { question, correctAnswer, correctUnit };
+      document.getElementById('question').innerText = question;
+    }
+
+    function checkAnswer() {
+      const answerInput = document.getElementById('answerInput').value;
+      const unitSelect = document.getElementById('unitSelect').value;
+      const feedback = document.getElementById('feedback');
+
+      if (parseInt(answerInput) === current.correctAnswer && unitSelect === current.correctUnit) {
+        correctCount++;
+        feedback.textContent = `Correct! The answer is ${current.correctAnswer} ${unitSelect}.`;
+        feedback.style.color = "#5bc0de"; // Correct feedback color
+      } else {
+        feedback.textContent = `Incorrect. The correct answer is ${current.correctAnswer} ${current.correctUnit}.`;
+        feedback.style.color = "#d9534f"; // Incorrect feedback color
+      }
+
+      document.getElementById('correctCount').innerText = correctCount;
+
+      feedback.classList.remove('hidden');
+      setTimeout(() => {
+        generateQuestion();
+        document.getElementById('answerInput').value = '';
+        document.getElementById('unitSelect').selectedIndex = 0; // Reset to the first option
+      }, 2000); // Generate a new question after 2 seconds
+    }
+
+    // Start with a question
+    generateQuestion();
+  </script>
+</body>
+</html>
