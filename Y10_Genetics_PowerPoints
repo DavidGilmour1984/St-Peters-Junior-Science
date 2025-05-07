@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Genetics Slides Viewer</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      background-color: #f5f5f5;
+      padding: 1.5em;
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      padding: 1.5em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 850px;
+      margin: auto;
+    }
+
+    iframe {
+      width: 100%;
+      height: 480px;
+      border: none;
+      border-radius: 8px;
+      margin-top: 1em;
+    }
+
+    select {
+      font-size: 1rem;
+      padding: 0.6em 1em;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      margin-bottom: 1em;
+      width: 90%;
+      max-width: 600px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Genetics PowerPoints</h2>
+
+  <select id="presentationSelect" onchange="loadPresentation()">
+    <option value="https://docs.google.com/presentation/d/1Oaz2MaU-6-DTYAYlX4clRAyMW-vwDvSRFukYk064gzw/embed?start=false&loop=false&delayms=3000">Lesson 1: Intro to Genetics</option>
+    <option value="https://docs.google.com/presentation/d/1Xv0giDPA69tc3tLgsJG0-vafuGxlJrBknwm7scuw1S0/embed?start=false&loop=false&delayms=3000">Lesson 2: DNA Structure, Genes and Chromosomes</option>
+    <option value="https://docs.google.com/presentation/d/13CFHsCpzK4rCZpBLNTsr0xw4qdUqx_286aGxm2FW5Qo/embed?start=false&loop=false&delayms=3000">Lesson 3: Genes and Alleles</option>
+    <option value="https://docs.google.com/presentation/d/19GS1mQreeziT8b-Rxc733PhW52cY968h/embed?start=false&loop=false&delayms=3000">Lesson 4: Harry Potter Genetics</option>
+    <option value="https://docs.google.com/presentation/d/1cIW12wDCEMANWrfq0XlEOLtrZLYOqwST/embed?start=false&loop=false&delayms=3000">Lesson 5: Punnett Squares</option>
+    <option value="https://docs.google.com/presentation/d/1lkkL7cUn72NDAzoUBxNGE7PvkVaJNUQY/embed?start=false&loop=false&delayms=3000">Lesson 6: Adaptations</option>
+</select>
+
+
+    <iframe
+      id="slideFrame"
+      src="https://docs.google.com/presentation/d/1Oaz2MaU-6-DTYAYlX4clRAyMW-vwDvSRFukYk064gzw/embed?start=false&loop=false&delayms=3000"
+      allowfullscreen
+    ></iframe>
+  </div>
+
+  <script>
+    function loadPresentation() {
+      const selectedURL = document.getElementById("presentationSelect").value;
+      document.getElementById("slideFrame").src = selectedURL;
+    }
+  </script>
+
+</body>
+</html>
