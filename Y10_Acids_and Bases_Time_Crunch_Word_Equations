@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Acids and Bases Quiz</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      background-color: #f5f5f5;
+      padding: 1em;
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    #timer {
+      font-size: 1.5rem;
+      margin-bottom: 1em;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 0.3em;
+    }
+
+    th, td {
+      padding: 5px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    .blank {
+      background-color: #e0e0e0;
+      min-height: 30px;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    .draggable {
+      background: #d9edf7;
+      border-radius: 8px;
+      padding: 5px;
+      cursor: grab;
+      font-size: 1rem;
+      user-select: none;
+    }
+
+    .draggable:hover {
+      background: #c4e3f3;
+    }
+
+    .word-bank {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 5px;
+      margin-top: 10px;
+    }
+
+    button {
+      margin-top: 1em;
+      padding: 0.3em 1.6em;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #28a745;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    .button-row {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Drag-and-Drop Acid & Base Speed Run</h2>
+    <div id="timer">Time: <span id="timer-display">0.00</span> seconds
+      <button onclick="checkAnswers()">Check Answers</button>
+      <button onclick="restartQuiz()">Restart</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Acid + Base Reaction</th>
+          <th>Product 1</th>
+          <th>Product 2</th>
+          <th>Product 3</th>
+        </tr>
+      </thead>
+      <tbody id="quiz-table">
+        <tr>
+          <td>Hydrochloric Acid + Sodium Hydroxide</td>
+          <td class="blank" id="q1" ondragover="allowDrop(event)" ondrop="drop(event)"></td>
+          <td class="blank" id="q2" ondragover="allowDrop(event)" ondrop="drop(event)"></td>
+          <td class="blank" id="q3" ondragover="allowDrop(event)" ondrop="drop(event)"></td>
+        </tr>
+        <tr>
+          <td>Nitric Acid + Sodium Hydroxide</td>
+          <td class="blank" id="q4" ondragover="allowDrop(event)" ondrop="drop(event)"></td>
+          <td class="blank" id="q5" ondragover="allowDrop(event)" ondrop="drop(event)"></td>
+          <td class="blank" id="q6" ondragover="allowDrop(event)" ondrop="drop(event)"></td>
+        </tr>
+        <tr>
+          <td>Sulfuric Acid + Sodium Hydroxide</td>
+          <td class="blank" id="q7" ondragover="allowDrop(event)" ondrop="drop(event)"></td>
+          <td class="blank" id="q8" ondragover="allowDrop(event)" ondrop="drop(event)"></td>
+          <td class="blank" id="q9" ondragover="allowDrop(event)" ondrop="drop(event)"></td>
+        </tr>
+        <tr>
+          <td>Hydrochloric Acid + Calcium Carbonate</td>
+          <td class="blank" id="q10" ondragover="allowDrop(event)" ondrop="drop(event)"></td>
+          <td class="blank" id="q11" ondragover="allowDrop(event)" ondrop="drop(event)"></td>
+          <td class="blank" id="q12" ondragover="allowDrop(event)" ondrop="drop(event)"></td>
+        </tr>
+        <tr>
+          <td>Sulfuric Acid + Calcium Carbonate</td>
+          <td class="blank" id="q13" ondragover="allowDrop(event)" ondrop="drop(event)"></td>
+          <td class="blank" id="q14" ondragover="allowDrop(event)" ondrop="drop(event)"></td>
+          <td class="blank" id="q15" ondragover="allowDrop(event)" ondrop="drop(event)"></td>
+        </tr>
+        <tr>
+          <td>Nitric Acid + Sodium Carbonate</td>
+          <td class="blank" id="q16" ondragover="allowDrop(event)" ondrop="drop(event)"></td>
+          <td class="blank" id="q17" ondragover="allowDrop(event)" ondrop="drop(event)"></td>
+          <td class="blank" id="q18" ondragover="allowDrop(event)" ondrop="drop(event)"></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="word-bank" id="word-bank"></div>
+    
+    <div class="button-row"></div>
+  </div>
+
+  <script>
+ const wordList = [
+  "Water", "Calcium Chloride", "Sodium Chloride", "Sodium Sulfate",
+  "Carbon Dioxide", "Water", "Sodium Nitrate", "Carbon Dioxide",
+  "Water", "Calcium Sulfate", "Sodium Nitrate", "Water",
+  "Carbon Dioxide", "Water", "Water"
+];
+
+const correctAnswers = {
+  "q1": "Sodium Chloride",
+  "q2": "Water",
+  "q3": "",
+  "q4": "Sodium Nitrate",
+  "q5": "Water",
+  "q6": "",
+  "q7": "Sodium Sulfate",
+  "q8": "Water",
+  "q9": "",
+  "q10": "Calcium Chloride",
+  "q11": "Water",
+  "q12": "Carbon Dioxide",
+  "q13": "Calcium Sulfate",
+  "q14": "Water",
+  "q15": "Carbon Dioxide",
+  "q16": "Sodium Nitrate",
+  "q17": "Water",
+  "q18": "Carbon Dioxide"
+};
+
+let timerInterval;
+let startTime;
+let isStarted = false;
+let wordCounter = 0;
+
+function allowDrop(ev) {
+  ev.preventDefault();
+}
+
+function drag(ev) {
+  ev.dataTransfer.setData("text", ev.target.id);
+}
+
+function drop(ev) {
+  ev.preventDefault();
+  const wordId = ev.dataTransfer.getData("text");
+  const dragged = document.getElementById(wordId);
+
+  if (ev.target.classList.contains("blank") && ev.target.children.length === 0) {
+    const clone = dragged.cloneNode(true);
+    clone.id = wordId + "-placed";
+    clone.ondragstart = drag;
+    ev.target.appendChild(clone);
+    dragged.remove();
+    if (!isStarted) startTimer();
+  }
+}
+
+function startTimer() {
+  isStarted = true;
+  startTime = Date.now();
+  timerInterval = setInterval(() => {
+    const elapsed = (Date.now() - startTime) / 1000;
+    document.getElementById("timer-display").textContent = elapsed.toFixed(2);
+  }, 50);
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+}
+
+function checkAnswers() {
+  let correct = 0;
+  const incorrectWords = [];
+
+  for (const id in correctAnswers) {
+    const cell = document.getElementById(id);
+    const word = cell.firstChild ? cell.firstChild.getAttribute("data-word") : "";
+    if (word === correctAnswers[id]) {
+      cell.style.backgroundColor = "#a0e6a0";
+      correct++;
+    } else {
+      cell.style.backgroundColor = "#e6a0a0";
+      if (cell.firstChild) {
+        incorrectWords.push(cell.firstChild.getAttribute("data-word"));
+        cell.removeChild(cell.firstChild);
+      }
+    }
+  }
+
+  if (correct === Object.keys(correctAnswers).length) {
+    stopTimer();
+  }
+
+  populateWordBankWithRemaining();
+  populateWordBankWithIncorrect(incorrectWords);
+}
+
+function populateWordBankWithRemaining() {
+  const bank = document.getElementById("word-bank");
+  bank.innerHTML = "";
+  const usedWordsCount = {};
+  const cells = document.querySelectorAll('.blank');
+
+  // Count how many times each word has been used
+  cells.forEach(cell => {
+    if (cell.firstChild) {
+      const word = cell.firstChild.getAttribute("data-word");
+      usedWordsCount[word] = (usedWordsCount[word] || 0) + 1;
+    }
+  });
+
+  // Create a copy of wordList and build the remainingWords properly
+  const remainingWords = [];
+  const wordCountMap = {};
+
+  // Count how many times each word appears in wordList
+  wordList.forEach(word => {
+    wordCountMap[word] = (wordCountMap[word] || 0) + 1;
+  });
+
+  // Subtract used count from total count to get how many to display
+  for (const word in wordCountMap) {
+    const remaining = wordCountMap[word] - (usedWordsCount[word] || 0);
+    for (let i = 0; i < remaining; i++) {
+      remainingWords.push(word);
+    }
+  }
+
+  shuffleArray(remainingWords);
+
+  remainingWords.forEach(word => {
+    const div = document.createElement("div");
+    div.className = "draggable";
+    div.draggable = true;
+    div.id = `word-${wordCounter++}`;
+    div.textContent = word;
+    div.setAttribute("data-word", word);
+    div.ondragstart = drag;
+    bank.appendChild(div);
+  });
+}
+
+function populateWordBankWithIncorrect(words) {
+  const bank = document.getElementById("word-bank");
+  words.forEach(word => {
+    const div = document.createElement("div");
+    div.className = "draggable";
+    div.draggable = true;
+    div.id = `retry-${wordCounter++}`;
+    div.textContent = word;
+    div.setAttribute("data-word", word);
+    div.ondragstart = drag;
+    bank.appendChild(div);
+  });
+}
+
+function restartQuiz() {
+  stopTimer();
+  document.getElementById("timer-display").textContent = "0.00";
+  isStarted = false;
+
+  for (const id in correctAnswers) {
+    const cell = document.getElementById(id);
+    if (cell.firstChild) {
+      cell.removeChild(cell.firstChild);
+    }
+    cell.style.backgroundColor = "#e0e0e0";
+  }
+
+  populateWordBank();
+}
+
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+
+function populateWordBank() {
+  const bank = document.getElementById("word-bank");
+  bank.innerHTML = "";
+  wordCounter = 0;
+  const shuffled = [...wordList];
+  shuffleArray(shuffled);
+
+  shuffled.forEach(word => {
+    const div = document.createElement("div");
+    div.className = "draggable";
+    div.draggable = true;
+    div.id = `word-${wordCounter++}`;
+    div.textContent = word;
+    div.setAttribute("data-word", word);
+    div.ondragstart = drag;
+    bank.appendChild(div);
+  });
+}
+
+window.onload = populateWordBank;
+</script>
+
+</body>
+</html>
