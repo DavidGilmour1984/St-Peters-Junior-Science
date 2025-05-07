@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Drag-and-Drop Cloze Quiz</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      padding: 2em;
+      background-color: #f5f5f5;
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 700px;
+      margin: auto;
+    }
+
+    .question {
+      display: none;
+    }
+
+    .question.active {
+      display: block;
+    }
+
+    .blank {
+      display: inline-block;
+      width: 120px;
+      border-bottom: 2px dashed #999;
+      margin: 0 5px;
+      min-height: 25px;
+      vertical-align: middle;
+      background-color: #f0f0f0;
+      padding: 4px 6px;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    .word-bank {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .draggable {
+      background: #e0e0e0;
+      border-radius: 8px;
+      padding: 10px 15px;
+      cursor: grab;
+      font-size: 1rem;
+      user-select: none;
+      transition: background 0.3s;
+    }
+
+    .draggable:hover {
+      background: #d0d0d0;
+    }
+
+    .correct {
+      background: #a0e6a0 !important;
+    }
+
+    .wrong {
+      background: #e6a0a0 !important;
+    }
+
+    .controls {
+      margin-top: 20px;
+    }
+
+    button {
+      margin-top: 1em;
+      padding: 0.8em 1.6em;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #feedback {
+      margin-top: 1em;
+      font-weight: bold;
+      color: #444;
+    }
+
+    #progress {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #444;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div id="quiz-container"></div>
+    <div id="progress">Progress: 1/15</div> <!-- Progress section -->
+  </div>
+
+
+  <script>
+  const questions = [
+  {
+    sentence: `Acids are substances that release <span class="blank" data-answer="hydrogen ions"></span> (H<sup>+</sup>) or more correctly <span class="blank" data-answer="hydronium ions"></span> (H<sub>3</sub>O<sup>+</sup>) when they react with water.`,
+    wordBank: ["hydronium ions", "hydrogen ions"]
+  },
+{
+  sentence: `Common lab acids include <span class="blank" data-answer="hydrochloric acid"></span> (used to clean metals), <span class="blank" data-answer="sulfuric acid"></span> (used in car batteries), and <span class="blank" data-answer="nitric acid"></span> (used to make fertilizers). Household acids include <span class="blank" data-answer="vinegar"></span> (used in cooking) and <span class="blank" data-answer="citric acid"></span> (found in citrus fruits).`,
+  wordBank: ["citric acid", "nitric acid", "vinegar", "sulfuric acid", "hydrochloric acid"]
+},
+  {
+    sentence: `The formulas for common acids are: Hydrochloric acid = <span class="blank" data-answer="HCl"></span>, Sulfuric acid = <span class="blank" data-answer="H₂SO₄"></span>, Nitric acid = <span class="blank" data-answer="HNO₃"></span>.`,
+    wordBank: ["HNO₃", "H₂SO₄", "HCl"]
+  },
+  {
+    sentence: `A strong acid has more <span class="blank" data-answer="hydrogen ions"></span> in solution and a <span class="blank" data-answer="lower pH"></span>.`,
+    wordBank: ["lower pH", "hydrogen ions"]
+  },
+  {
+    sentence: `Acids turn blue litmus paper <span class="blank" data-answer="red"></span>, react with metals to produce <span class="blank" data-answer="hydrogen gas"></span>, and show a <span class="blank" data-answer="low pH"></span> with universal indicator.`,
+    wordBank: ["low pH", "hydrogen gas", "red"]
+  },
+  {
+    sentence: `Bases are substances that release <span class="blank" data-answer="hydroxide ions"></span> (OH<sup>−</sup>) when they react with water. An <span class="blank" data-answer="alkali"></span> is a base that dissolves in water.`,
+    wordBank: ["alkali", "hydroxide ions"]
+  },
+{
+  sentence: `Common bases include <span class="blank" data-answer="baking soda"></span> (used in baking and cleaning), <span class="blank" data-answer="ammonia"></span> (used in household cleaners), <span class="blank" data-answer="sodium hydroxide"></span> (used in drain cleaners), <span class="blank" data-answer="calcium carbonate"></span> (used in antacids and chalk), and <span class="blank" data-answer="potassium hydroxide"></span> (used in making soap).`,
+  wordBank: ["ammonia", "sodium hydroxide", "baking soda", "calcium carbonate", "potassium hydroxide"]
+},
+  {
+    sentence: `The formulas for bases are: Sodium hydroxide = <span class="blank" data-answer="NaOH"></span>, Calcium carbonate = <span class="blank" data-answer="CaCO₃"></span>, Potassium hydroxide = <span class="blank" data-answer="KOH"></span>.`,
+    wordBank: ["CaCO₃", "KOH", "NaOH"]
+  },
+  {
+    sentence: `Bases turn red litmus paper <span class="blank" data-answer="blue"></span> and show a <span class="blank" data-answer="high pH"></span> with universal indicator.`,
+    wordBank: ["blue", "high pH"]
+  },
+  {
+    sentence: `Indicators are substances that change <span class="blank" data-answer="colour"></span> to show whether a substance is an acid or base.`,
+    wordBank: ["colour"]
+  },
+  {
+    sentence: `A <span class="blank" data-answer="neutralisation"></span> reaction occurs when an acid reacts with a base to form <span class="blank" data-answer="water"></span>.`,
+    wordBank: ["neutralisation", "water"]
+  },
+  {
+    sentence: `The general word equation for neutralisation is: Base + Acid → <span class="blank" data-answer="Salt"></span> + <span class="blank" data-answer="Water"></span>.`,
+    wordBank: ["Water", "Salt"]
+  },
+  {
+    sentence: `Acids react with metals to produce a <span class="blank" data-answer="salt"></span> and <span class="blank" data-answer="hydrogen gas"></span>.`,
+    wordBank: ["hydrogen gas", "salt"]
+  },
+  {
+    sentence: `Acids react with metal carbonates to produce a <span class="blank" data-answer="salt"></span>, <span class="blank" data-answer="water"></span>, and <span class="blank" data-answer="carbon dioxide"></span>.`,
+    wordBank: ["carbon dioxide", "salt", "water"]
+  },
+  {
+    sentence: `Concentrated acids have more <span class="blank" data-answer="acid particles"></span> in a given volume than dilute acids.`,
+    wordBank: ["acid particles"]
+  },
+  {
+    sentence: `Increasing the concentration of an acid increases the <span class="blank" data-answer="rate of reaction"></span> due to more frequent <span class="blank" data-answer="collisions"></span> between particles.`,
+    wordBank: ["rate of reaction", "collisions"]
+  },
+  {
+    sentence: `The <span class="blank" data-answer="pop test"></span> is used to test for hydrogen gas. The <span class="blank" data-answer="limewater test"></span> is used to test for carbon dioxide.`,
+    wordBank: ["limewater test", "pop test"]
+  }
+];
+
+
+
+    let currentIndex = 0;
+
+    function renderQuestion(index) {
+      const q = questions[index];
+      const container = document.getElementById('quiz-container');
+
+      const qDiv = document.createElement('div');
+      qDiv.classList.add('question');
+      if (index === 0) qDiv.classList.add('active');
+
+      const sentenceHTML = `<p>${q.sentence}</p>`;
+      const wordBankHTML = q.wordBank.map(word =>
+        `<div class="draggable" draggable="true" ondragstart="drag(event)" id="word-${word}">${word}</div>`
+      ).join('');
+
+      qDiv.innerHTML = `
+        ${sentenceHTML}
+        <div class="word-bank">${wordBankHTML}</div>
+        <div class="controls">
+          <button onclick="checkAnswers(this)">Check Answer</button>
+        </div>
+      `;
+
+      container.appendChild(qDiv);
+
+      const blanks = qDiv.querySelectorAll('.blank');
+      blanks.forEach(blank => {
+        blank.setAttribute('ondragover', 'allowDrop(event)');
+        blank.setAttribute('ondrop', 'drop(event)');
+      });
+
+      updateProgress(); // Update progress when rendering each question
+    }
+
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+
+    function drag(ev) {
+      ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+      ev.preventDefault();
+      const data = ev.dataTransfer.getData("text");
+      const dragged = document.getElementById(data);
+
+      // If already filled, remove the old word
+      if (ev.target.firstChild) {
+        ev.target.innerHTML = '';
+      }
+
+      const clone = dragged.cloneNode(true);
+      clone.setAttribute("draggable", "false");
+      clone.style.cursor = "default";
+      clone.classList.remove("draggable");
+      ev.target.innerHTML = '';
+      ev.target.appendChild(clone);
+    }
+
+    function checkAnswers(button) {
+      const questionDiv = button.closest('.question');
+      const blanks = questionDiv.querySelectorAll('.blank');
+      let allCorrect = true;
+
+      blanks.forEach(blank => {
+        const correctAnswer = blank.dataset.answer.toLowerCase();
+        const userAnswer = blank.textContent.trim().toLowerCase();
+
+        if (userAnswer === correctAnswer) {
+          blank.classList.add('correct');
+        } else {
+          allCorrect = false;
+        }
+      });
+
+      if (allCorrect) {
+        setTimeout(() => nextQuestion(), 600);
+      } else {
+        // Reset wrong answers after short delay
+        setTimeout(() => {
+          blanks.forEach(blank => {
+            blank.innerHTML = '';
+            blank.style.borderColor = '#000';
+            blank.classList.remove('correct');
+          });
+          // Re-add word bank
+          const wordBank = questionDiv.querySelector('.word-bank');
+          wordBank.innerHTML = '';
+          const words = questions[currentIndex].wordBank;
+          words.forEach(word => {
+            const wordDiv = document.createElement('div');
+            wordDiv.className = 'draggable';
+            wordDiv.draggable = true;
+            wordDiv.id = `word-${word}`;
+            wordDiv.ondragstart = drag;
+            wordDiv.textContent = word;
+            wordBank.appendChild(wordDiv);
+          });
+        }, 800);
+      }
+    }
+
+    function nextQuestion() {
+      const questionsDivs = document.querySelectorAll('.question');
+      questionsDivs[currentIndex].classList.remove('active');
+      currentIndex++;
+      if (currentIndex < questions.length) {
+        questionsDivs[currentIndex].classList.add('active');
+      } else {
+        document.getElementById('quiz-container').innerHTML = "<h2>Ka pai! You’ve finished the quiz!</h2>";
+      }
+      updateProgress(); // Update progress when moving to next question
+    }
+
+    function updateProgress() {
+      const progressElement = document.getElementById('progress');
+      progressElement.textContent = `Progress: ${currentIndex + 1}/${questions.length}`;
+    }
+
+    // Render all questions at load
+    questions.forEach((_, i) => renderQuestion(i)); 
+    </script>
+</body>
+</html>
