@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rearrange the Equation</title>
+  <style>
+    body {
+        font-family: Helvetica, sans-serif;
+        background-color: #f5f5f5;
+        padding: 1.5em;
+        text-align: center;
+    }
+
+    .card {
+        background: white;
+        padding: 1.5em;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        max-width: 900px;
+        margin: auto;
+    }
+
+    .reaction {
+        margin: 1.5em 0;
+        font-size: 1.3rem;
+    }
+
+    .equation-area {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .equals-sign {
+        margin: 0 1em;
+        font-size: 2rem;
+    }
+
+    .draggable-area {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .numerator, .denominator {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .line {
+        height: 3px;
+        background-color: black;
+        width: 90%;
+        margin: 10px auto;
+    }
+
+    .drop-zone {
+        display: inline-block;
+        width: 60px;
+        height: 40px;
+        background-color: #e0e0e0;
+        border-radius: 8px;
+        margin: 5px;
+        font-weight: bold;
+        line-height: 40px;
+        text-align: center;
+        font-size: 1.2rem;
+        cursor: pointer;
+        box-sizing: border-box;
+    }
+
+    .draggable {
+        background: #d9edf7;
+        border-radius: 8px;
+        width: 60px;
+        height: 40px;
+        line-height: 40px;
+        text-align: center;
+        font-size: 1.2rem;
+        display: inline-block;
+        cursor: grab;
+    }
+
+    .draggable:hover {
+        background: #c4e3f3;
+    }
+
+    button {
+        margin-top: 2em;
+        padding: 0.5em 1.6em;
+        font-size: 1rem;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        background-color: #28a745;
+        color: white;
+        transition: background 0.3s;
+    }
+
+    button:hover {
+        background-color: #218838;
+    }
+
+    #scoreDisplay {
+        margin-top: 1em;
+        font-weight: bold;
+        font-size: 1.2rem;
+    }
+</style>
+</head>
+<body>
+    <div class="card">
+        <h2>Rearrange the Equation: GPE = m * g * h</h2>
+        <div class="reaction" id="reactionArea">
+            <div class="equation-area">
+                <!-- Left Side -->
+                <div class="draggable-area">
+                    <div class="numerator">
+                        <div class="drop-zone" id="leftNumerator1" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+                        <div class="drop-zone" id="leftNumerator2" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+                        <div class="drop-zone" id="leftNumerator3" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+                        <div class="drop-zone" id="leftNumerator4" ondrop="drop(event)" ondragover="allowDrop(event)">
+                            <span id="dragGPE" class="draggable" draggable="true" ondragstart="drag(event)">GPE</span>
+                        </div>
+                    </div>
+                    <div class="line"></div>
+                    <div class="denominator">
+                        <div class="drop-zone" id="leftDenominator1" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+                        <div class="drop-zone" id="leftDenominator2" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+                        <div class="drop-zone" id="leftDenominator3" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+                        <div class="drop-zone" id="leftDenominator4" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+                    </div>
+                </div>
+
+                <!-- Equals -->
+                <div class="equals-sign">=</div>
+
+                <!-- Right Side -->
+                <div class="draggable-area">
+                    <div class="numerator">
+                        <div class="drop-zone" id="rightNumerator4" ondrop="drop(event)" ondragover="allowDrop(event)">
+                            <span id="dragM" class="draggable" draggable="true" ondragstart="drag(event)">m</span>
+                        </div>
+                        <div class="drop-zone" id="rightNumerator3" ondrop="drop(event)" ondragover="allowDrop(event)">
+                            <span id="dragG" class="draggable" draggable="true" ondragstart="drag(event)">g</span>
+                        </div>
+                        <div class="drop-zone" id="rightNumerator2" ondrop="drop(event)" ondragover="allowDrop(event)">
+                            <span id="dragH" class="draggable" draggable="true" ondragstart="drag(event)">h</span>
+                        </div>
+                        <div class="drop-zone" id="rightNumerator1" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+                    </div>
+                    <div class="line"></div>
+                    <div class="denominator">
+                        <div class="drop-zone" id="rightDenominator4" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+                        <div class="drop-zone" id="rightDenominator3" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+                        <div class="drop-zone" id="rightDenominator2" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+                        <div class="drop-zone" id="rightDenominator1" ondrop="drop(event)" ondragover="allowDrop(event)"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <button onclick="invert()">Invert</button>
+            <button onclick="mirror()">Mirror</button>
+            <div id="scoreDisplay"></div>
+        </div>
+    </div>
+</body>
+
+<script>
+// Store original parent to revert any invalid move
+let originalParent = null;
+
+function allowDrop(ev) {
+    ev.preventDefault();
+}
+
+function drag(ev) {
+    ev.dataTransfer.setData("text", ev.target.id);
+    originalParent = ev.target.parentElement; // Store the original drop zone
+}
+
+function drop(ev) {
+    ev.preventDefault();
+    const data = ev.dataTransfer.getData("text");
+    const draggedElement = document.getElementById(data);
+    const targetDropZone = ev.target.closest(".drop-zone");
+
+    if (!targetDropZone) return;
+
+    const fromZone = originalParent.id;
+    const toZone = targetDropZone.id;
+
+    if (isInvalidMove(fromZone, toZone)) {
+        // Return to original location
+        if (originalParent && originalParent.children.length === 0) {
+            originalParent.appendChild(draggedElement);
+        }
+        return;
+    }
+
+    // Only allow drop if the target is empty
+    if (targetDropZone.children.length > 0) {
+        originalParent.appendChild(draggedElement);
+        return;
+    }
+
+    targetDropZone.appendChild(draggedElement);
+}
+
+function isInvalidMove(from, to) {
+    const isNumerator = zone => zone.includes("Numerator");
+    const isDenominator = zone => zone.includes("Denominator");
+    const isLeft = zone => zone.includes("left");
+    const isRight = zone => zone.includes("right");
+    const sameSide = (isLeft(from) && isLeft(to)) || (isRight(from) && isRight(to));
+
+    // Disallow numerator ↔ denominator on the same side
+    if (
+        sameSide &&
+        (
+            (isNumerator(from) && isDenominator(to)) ||
+            (isDenominator(from) && isNumerator(to))
+        )
+    ) return true;
+
+    // Disallow numerator to numerator across the equals
+    if (isNumerator(from) && isNumerator(to) && !sameSide) return true;
+
+    // Disallow denominator to denominator across the equals
+    if (isDenominator(from) && isDenominator(to) && !sameSide) return true;
+
+    return false; // All valid moves are allowed
+}
+
+// Invert function to swap numerators and denominators vertically
+function invert() {
+    const numeratorsLeft = document.querySelectorAll("#leftNumerator1, #leftNumerator2, #leftNumerator3, #leftNumerator4");
+    const denominatorsLeft = document.querySelectorAll("#leftDenominator1, #leftDenominator2, #leftDenominator3, #leftDenominator4");
+    const numeratorsRight = document.querySelectorAll("#rightNumerator1, #rightNumerator2, #rightNumerator3, #rightNumerator4");
+    const denominatorsRight = document.querySelectorAll("#rightDenominator1, #rightDenominator2, #rightDenominator3, #rightDenominator4");
+
+    // Swap numerators with denominators
+    for (let i = 0; i < 4; i++) {
+        const tempLeft = numeratorsLeft[i].innerHTML;
+        numeratorsLeft[i].innerHTML = denominatorsLeft[i].innerHTML;
+        denominatorsLeft[i].innerHTML = tempLeft;
+
+        const tempRight = numeratorsRight[i].innerHTML;
+        numeratorsRight[i].innerHTML = denominatorsRight[i].innerHTML;
+        denominatorsRight[i].innerHTML = tempRight;
+    }
+}
+
+// Mirror function to swap the left and right sides of the equation
+function mirror() {
+    const numeratorsLeft = document.querySelectorAll("#leftNumerator1, #leftNumerator2, #leftNumerator3, #leftNumerator4");
+    const denominatorsLeft = document.querySelectorAll("#leftDenominator1, #leftDenominator2, #leftDenominator3, #leftDenominator4");
+    const numeratorsRight = document.querySelectorAll("#rightNumerator1, #rightNumerator2, #rightNumerator3, #rightNumerator4");
+    const denominatorsRight = document.querySelectorAll("#rightDenominator1, #rightDenominator2, #rightDenominator3, #rightDenominator4");
+
+    // Swap numerators
+    for (let i = 0; i < 4; i++) {
+        const tempLeft = numeratorsLeft[i].innerHTML;
+        numeratorsLeft[i].innerHTML = numeratorsRight[i].innerHTML;
+        numeratorsRight[i].innerHTML = tempLeft;
+    }
+
+    // Swap denominators
+    for (let i = 0; i < 4; i++) {
+        const tempLeft = denominatorsLeft[i].innerHTML;
+        denominatorsLeft[i].innerHTML = denominatorsRight[i].innerHTML;
+        denominatorsRight[i].innerHTML = tempLeft;
+    }
+}
+</script>
+
+
+
+</body>
+</html>
