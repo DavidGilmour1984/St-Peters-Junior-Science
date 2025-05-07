@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Parallel Circuit Challenge</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      padding: 0.2em;
+      background-color: #f5f5f5;
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      padding: 0.2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 1000px;
+      margin: auto;
+    }
+
+    canvas {
+      border: 1px solid #ccc;
+      background-color: #f9f9f9;
+      margin-top: 0.2em;
+      margin-bottom: 0.2em;
+      border-radius: 8px;
+    }
+
+    .question {
+      font-size: 1.2em;
+      margin: 0.2em 0;
+    }
+
+    input[type="number"] {
+      font-size: 1em;
+      padding: 0.5em;
+      width: 200px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      text-align: center;
+      margin: 0.5em;
+    }
+
+    button {
+      margin-top: 0.2em;
+      padding: 0.5em 1.6em;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #feedback {
+      margin-top: 0.5em;
+      font-weight: bold;
+    }
+
+    .incorrect {
+      color: red;
+    }
+
+    .correct {
+      color: green;
+    }
+
+    #tally {
+      margin-top: 0.5em;
+      font-size: 1.1em;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Parallel Circuit Quiz</h2>
+    <canvas id="circuitCanvas" width="500" height="500"></canvas>
+    <div class="question">Find the missing current and voltage values.</div>
+    <input type="number" id="currentInput" placeholder="Missing Current (A)" step="1">
+    <input type="number" id="voltageInput" placeholder="Missing Voltage (V)" step="1">
+    <button onclick="checkAnswer()">Check Answer</button>
+    <br>
+    <div id="feedback"></div>
+    <div id="tally">Correct Answers: 0 / 0</div>
+  </div>
+
+<script>
+  const canvas = document.getElementById("circuitCanvas");
+  const ctx = canvas.getContext("2d");
+  const currentInput = document.getElementById("currentInput");
+  const voltageInput = document.getElementById("voltageInput");
+  const feedback = document.getElementById("feedback");
+  const tallyDisplay = document.getElementById("tally");
+
+  let missingCurrent = null;
+  let missingVoltage = null;
+  let missingVoltageIndex = -1;
+  let currentMissingIndex = -1;
+  let tallyCorrect = 0;
+  let tallyTotal = 0;
+
+  function drawBulb(x, y) {
+    ctx.beginPath();
+    ctx.arc(x, y, 20, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x - 15, y - 15);
+    ctx.lineTo(x + 15, y + 15);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x + 15, y - 15);
+    ctx.lineTo(x - 15, y + 15);
+    ctx.stroke();
+  }
+
+  function drawBattery(x, y) {
+    ctx.beginPath();
+    ctx.moveTo(x, y - 20);
+    ctx.lineTo(x, y + 20);
+    ctx.moveTo(x + 10, y - 10);
+    ctx.lineTo(x + 10, y + 10);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(x + 30, y - 20);
+    ctx.lineTo(x + 30, y + 20);
+    ctx.moveTo(x + 40, y - 10);
+    ctx.lineTo(x + 40, y + 10);
+    ctx.stroke();
+  }
+
+  function generateParallelCircuit() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let numBulbs = Math.floor(Math.random() * 4) + 1; // 1 to 3 bulbs
+    let resistanceValues = [];
+    let currentThroughEachBulb = [];
+    
+    const baseHeight = 210;        // Minimum height for canvas
+    const extraHeightPerBulb = 110;
+    canvas.height = baseHeight + (numBulbs - 1) * extraHeightPerBulb;
+    
+    for (let i = 0; i < numBulbs; i++) {
+      resistanceValues.push(Math.floor(Math.random() * 10) + 1);
+    }
+
+    let batteryVoltage = Math.floor(Math.random() * 13) + 12; // 12V to 24V
+    currentThroughEachBulb = resistanceValues.map(r => Math.round(batteryVoltage / r));
+
+    let totalCurrent = currentThroughEachBulb.reduce((sum, c) => sum + c, 0);
+
+    missingVoltageIndex = Math.floor(Math.random() * numBulbs);
+    currentMissingIndex = Math.floor(Math.random() * numBulbs);
+    missingVoltage = batteryVoltage;
+
+    // Recalculate missingCurrent properly
+    let knownCurrentsSum = 0;
+    for (let i = 0; i < numBulbs; i++) {
+      if (i !== currentMissingIndex) {
+        knownCurrentsSum += currentThroughEachBulb[i];
+      }
+    }
+    missingCurrent = totalCurrent - knownCurrentsSum;
+
+    currentInput.disabled = false;
+    voltageInput.disabled = false;
+    currentInput.value = "";
+    voltageInput.value = "";
+    feedback.innerHTML = '';
+
+    let bulbStartY = 150;
+    let bulbSpacing = 100;
+    let firstBulbX = canvas.width / 2;
+    let batteryX = canvas.width / 2 - 10;
+    let batteryY = 80;
+    let leftX = firstBulbX - 50;
+    let rightX = firstBulbX + 50;
+
+    drawBattery(batteryX, batteryY);
+    ctx.font = "16px Helvetica";
+    let currentBulbY = bulbStartY;
+
+    for (let i = 0; i < numBulbs; i++) {
+      drawBulb(firstBulbX, currentBulbY);
+      let vLabel = (i === missingVoltageIndex) ? "?V" : batteryVoltage + "V";
+      let cLabel = (i === currentMissingIndex) ? "?A⟶" : currentThroughEachBulb[i] + "A⟶";
+      ctx.fillText(vLabel, firstBulbX - 15, currentBulbY + 35);
+      ctx.fillText(cLabel, firstBulbX - 15, currentBulbY + 50);
+      currentBulbY += bulbSpacing;
+    }
+
+    // Horizontal wires from battery to left/right
+    ctx.beginPath();
+    ctx.moveTo(batteryX, batteryY);
+    ctx.lineTo(leftX, batteryY);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(batteryX + 40, batteryY);
+    ctx.lineTo(rightX, batteryY);
+    ctx.stroke();
+
+    // Bulb wires to left/right
+    let bulbY = bulbStartY;
+    for (let i = 0; i < numBulbs; i++) {
+      ctx.beginPath();
+      ctx.moveTo(firstBulbX - 20, bulbY);
+      ctx.lineTo(leftX, bulbY);
+      ctx.lineTo(leftX, batteryY);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(firstBulbX + 20, bulbY);
+      ctx.lineTo(rightX, bulbY);
+      ctx.lineTo(rightX, batteryY);
+      ctx.stroke();
+
+      bulbY += bulbSpacing;
+    }
+
+    ctx.fillText(`Battery: ${batteryVoltage}V`, batteryX - 30, batteryY - 50);
+    ctx.fillText(`⟵ ${totalCurrent}A`, batteryX - 20, batteryY - 30);
+  }
+
+  function checkAnswer() {
+    tallyTotal++;
+    const userCurrent = parseInt(currentInput.value);
+    const userVoltage = parseInt(voltageInput.value);
+
+    const correctCurrent = missingCurrent;
+    const correctVoltage = missingVoltage;
+
+    const correctC = userCurrent === correctCurrent;
+    const correctV = userVoltage === correctVoltage;
+
+    let message = "";
+
+    if (correctC && correctV) {
+      tallyCorrect++;
+      message = "<span class='correct'>Correct! Both current and voltage are right.</span>";
+    } else {
+      message = `<span class='incorrect'>Incorrect.<br>Correct current: ${correctCurrent} A<br>Correct voltage: ${correctVoltage} V</span>`;
+    }
+
+    feedback.innerHTML = message;
+    tallyDisplay.innerText = `Correct Answers: ${tallyCorrect} / ${tallyTotal}`;
+    setTimeout(generateParallelCircuit, 2000);
+  }
+
+  generateParallelCircuit();
+</script>
+
+</body>
+</html>
