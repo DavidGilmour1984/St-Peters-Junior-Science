@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Carbon Chemistry and Climate Change Learning Outcomes</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      background-color: #f5f5f5;
+      padding: 1.5em;
+      text-align: center;
+    }
+
+    .container {
+      background: white;
+      padding: 1.5em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h1 {
+      margin-bottom: 1em;
+    }
+
+    ol {
+      font-size: 1rem;
+      line-height: 2rem;
+      margin-left: 0;
+      padding-left: 1.2em;
+      text-align: left;
+    }
+
+    li {
+      margin-bottom: 1em;
+      position: relative;
+    }
+
+    .info-button {
+      margin-left: 0.5em;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 1.6em;
+      height: 1.6em;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 1em;
+      vertical-align: middle;
+    }
+
+    .popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      border: 2px solid #007BFF;
+      border-radius: 10px;
+      padding: 1em;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      max-width: 500px;
+      z-index: 1000;
+    }
+
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+    }
+
+    .popup p {
+      margin-bottom: 0.5em;
+    }
+
+    .close-btn {
+      background: #007BFF;
+      color: white;
+      border: none;
+      padding: 0.4em 0.8em;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 0.5em;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h1>Carbon Chemistry and Climate Change</h1>
+  <ol id="outcomes-list"></ol>
+</div>
+
+<div class="overlay" id="overlay" onclick="closePopup()"></div>
+<div class="popup" id="popup">
+  <p id="popup-text"></p>
+  <button class="close-btn" onclick="closePopup()">Close</button>
+</div>
+
+<script>
+  const outcomes = [
+    "Describe the 4 systems of our dynamic Earth (biosphere, geosphere, hydrosphere and atmosphere) and explain how they overlap",
+    "Recognise that the Sun is the main source of heat energy for the Earth, and explain how that energy is both reflected and absorbed",
+    "Differentiate between weather and climate",
+    "Identify different forms in which carbon can be found",
+    "Recognise carbon as an element that is essential to living things, which cycles between soil, living things, and the atmosphere",
+    "Identify major carbon reservoirs, including fossil fuels, carbonates and the ocean",
+    "Describe a process that releases carbon into the atmosphere",
+    "Describe a process that removes carbon from the atmosphere",
+    "Define combustion as the burning of fuels in air (oxygen) to produce energy",
+    "Recognise that fossil fuels are carbon-based compounds",
+    "Write word equations for complete and incomplete combustion",
+    "Compare and contrast complete and incomplete combustion",
+    "Explain how human activities are contributing carbon to the atmosphere at an unprecedented rate",
+    "Name and give chemical formulae for the main greenhouse gases",
+    "Understand the importance of the natural greenhouse effect",
+    "List types of evidence scientists use to find out about Earth’s climate in the past",
+    "Describe recent trends in surface temperature and atmospheric carbon dioxide",
+    "Understand about ocean acidification and the possible impacts on shelled marine animals",
+    "Express an opinion on climate change, supported by scientific evidence",
+    "Explain the implications of climate change for people and nature, particularly in NZ"
+  ];
+
+  const explanations = [
+    "The four Earth systems are: biosphere (living things), geosphere (rocks, soil), hydrosphere (water), and atmosphere (air). These systems overlap and influence each other — e.g., water in the hydrosphere supports life in the biosphere, and volcanoes in the geosphere can impact the atmosphere.",
+    "The Sun is Earth's primary energy source. Some of this energy is absorbed by the Earth’s surface and atmosphere, while some is reflected back into space. This balance controls Earth's climate.",
+    "Weather is the day-to-day condition of the atmosphere (like rain, temperature). Climate is the average weather conditions over a long period (decades or more).",
+    "Carbon exists in many forms: CO₂ in the air, CH₄ (methane), glucose in organisms, fossil fuels underground, and carbonates in rocks or shells.",
+    "Carbon is found in living things (like DNA, proteins, sugars) and cycles through the environment via processes like photosynthesis, respiration, and decomposition.",
+    "Major carbon reservoirs include fossil fuels, ocean water, carbonate rocks, soil, and the atmosphere.",
+    "Processes like combustion (burning fossil fuels), respiration, and volcanic activity release carbon into the atmosphere.",
+    "Processes like photosynthesis and absorption by oceans remove CO₂ from the atmosphere.",
+    "Combustion is the chemical reaction where fuels burn in oxygen to release energy, forming CO₂ and water (complete) or carbon monoxide/soot (incomplete).",
+    "Fossil fuels (coal, oil, natural gas) are hydrocarbons made from ancient living organisms and are rich in carbon.",
+    "Complete combustion: fuel + oxygen → carbon dioxide + water. Incomplete combustion: fuel + limited oxygen → carbon monoxide + water (or soot).",
+    "Complete combustion releases more energy and fewer pollutants, while incomplete combustion produces less energy and harmful substances like CO and soot.",
+    "Burning fossil fuels, deforestation, and industrial activities have increased atmospheric CO₂ beyond natural levels, leading to global warming.",
+    "Main greenhouse gases: carbon dioxide (CO₂), methane (CH₄), nitrous oxide (N₂O), and water vapor (H₂O).",
+    "The natural greenhouse effect traps heat in the atmosphere, keeping Earth warm enough to sustain life.",
+    "Scientists use ice cores, tree rings, sediment layers, and historical records to understand past climate changes.",
+    "Data shows a rapid increase in average global surface temperatures and CO₂ levels, especially since the Industrial Revolution.",
+    "As oceans absorb more CO₂, they become more acidic, making it harder for animals like shellfish and coral to form calcium carbonate shells.",
+    "Scientific evidence supports that human activity is changing the climate. You can form your opinion using data, models, and trends.",
+    "In New Zealand, rising sea levels, extreme weather, and ecosystem changes impact agriculture, biodiversity, and coastal communities."
+  ];
+
+  const list = document.getElementById('outcomes-list');
+
+  outcomes.forEach((text, index) => {
+    const li = document.createElement('li');
+    li.innerHTML = `${text} <button class="info-button" onclick="showPopup(${index})">?</button>`;
+    list.appendChild(li);
+  });
+
+  function showPopup(index) {
+    document.getElementById('popup-text').textContent = explanations[index];
+    document.getElementById('popup').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
+  }
+
+  function closePopup() {
+    document.getElementById('popup').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+  }
+</script>
+
+</body>
+</html>
