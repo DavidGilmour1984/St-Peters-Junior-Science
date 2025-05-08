@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Digestive System Diagram Quiz</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      background: #f4f4f4;
+      text-align: center;
+      padding: 2em;
+    }
+
+    .quiz-card {
+      background: #fff;
+      padding: 2em;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      max-width: 800px;
+      margin: auto;
+      position: relative;
+    }
+
+    .diagram-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .pointer {
+      position: absolute;
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-bottom: 20px solid red;
+      animation: bounce 1s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    #timer-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 20px auto;
+    }
+
+    #timer {
+      margin-right: 20px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #333;
+    }
+
+    #restart-btn {
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background-color: #28a745;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    #restart-btn:hover {
+      background-color: #218838;
+    }
+
+    .choices {
+      margin-top: 20px;
+    }
+
+    .choices button {
+      margin: 0.5em;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    .choices button:hover {
+      background-color: #0056b3;
+    }
+
+    #feedback {
+      margin-top: 1em;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="quiz-card">
+    <h2>Human Digestive System Diagram Quiz</h2>
+    <div class="diagram-container">
+      <img id="diagram" src="Y10_Human_Body_Digesige_System_Image.png" alt="Digestive System Diagram" width="600" />
+      <div id="pointer" class="pointer" style="top: 200px; left: 150px;"></div>
+    </div>
+        <div class="choices" id="choices"></div>
+    <div id="feedback"></div>
+
+    <div id="timer-container">
+      <div id="timer">Time: 0.00s</div>
+      <button id="restart-btn" onclick="restartQuiz()">Restart</button>
+    </div>
+
+
+  </div>
+
+  <script>
+    const questions = [
+      { label: "Liver", pointer: { top: 430, left: 240 }, choices: ["Liver", "Pancreas", "Stomach", "Rectum"] },
+      { label: "Pancreas", pointer: { top: 530, left: 275 }, choices: ["Gallbladder", "Pancreas", "Anus", "Stomach"] },
+      { label: "Small intestine", pointer: { top: 630, left: 295 }, choices: ["Small intestine", "Liver", "Stomach", "Rectum"] },
+      { label: "Anus", pointer: { top: 788, left: 292 }, choices: ["Liver", "Anus", "Pancreas", "Gallbladder"] },
+      { label: "Large intestine", pointer: { top: 625, left: 195 }, choices: ["Large intestine", "Esophagus", "Pancreas", "Anus"] },
+      { label: "Rectum", pointer: { top: 720, left: 295 }, choices: ["Mouth", "Stomach", "Rectum", "Small intestine"] },
+      { label: "Gall bladder", pointer: { top: 470, left: 220 }, choices: ["Gall bladder", "Liver", "Stomach", "Pancreas"] },
+      { label: "Esophagus", pointer: { top: 220, left: 295 }, choices: ["Small intestine", "Esophagus", "Anus", "Gallbladder"] },
+      { label: "Stomach", pointer: { top: 470, left: 350 }, choices: ["Stomach", "Liver", "Mouth", "Large intestine"] },
+      { label: "Mouth", pointer: { top: 170, left: 240 }, choices: ["Mouth", "Stomach", "Rectum", "Pancreas"] }
+
+    ];
+
+    let current = 0;
+    let seconds = 0;
+    let timerStarted = false;
+    let timerInterval;
+
+    const pointer = document.getElementById("pointer");
+    const choicesDiv = document.getElementById("choices");
+    const feedback = document.getElementById("feedback");
+    const timerDiv = document.getElementById("timer");
+
+    function loadQuestion() {
+      const q = questions[current];
+      pointer.style.top = q.pointer.top + "px";
+      pointer.style.left = q.pointer.left + "px";
+
+      choicesDiv.innerHTML = "";
+      q.choices.forEach(choice => {
+        const btn = document.createElement("button");
+        btn.textContent = choice;
+        btn.onclick = () => {
+          if (!timerStarted) {
+            timerStarted = true;
+            timerInterval = setInterval(() => {
+              seconds += 0.01;
+              timerDiv.textContent = `Time: ${seconds.toFixed(2)}s`;
+            }, 10);
+          }
+
+          if (choice === q.label) {
+            feedback.textContent = "Correct!";
+            feedback.style.color = "green";
+            setTimeout(() => {
+              current++;
+              if (current < questions.length) {
+                loadQuestion();
+                feedback.textContent = "";
+              } else {
+                clearInterval(timerInterval);
+                feedback.textContent = `Well done! Quiz complete in ${seconds.toFixed(2)} seconds.`;
+              }
+            }, 100); // 100ms delay for correct answer
+          } else {
+            feedback.textContent = "Try again!";
+            feedback.style.color = "red";
+            setTimeout(() => {
+              feedback.textContent = "";
+            }, 2000); // 2000ms delay for incorrect answer
+          }
+        };
+        choicesDiv.appendChild(btn);
+      });
+    }
+
+    function restartQuiz() {
+      current = 0;
+      seconds = 0;
+      clearInterval(timerInterval);
+      timerStarted = false;
+      timerDiv.textContent = "Time: 0.00s";
+      feedback.textContent = "";
+      loadQuestion();
+    }
+
+    loadQuestion();
+  </script>
+</body>
+</html>
