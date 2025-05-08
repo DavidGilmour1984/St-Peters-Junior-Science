@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Genetics Glossary</title>
+  <style>
+    body {
+        font-family: Helvetica, sans-serif;
+        background-color: #f5f5f5;
+        padding: 1.5em;
+        text-align: center;
+    }
+
+    .card {
+        background: white;
+        padding: 1.5em;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        max-width: 900px;
+        margin: auto;
+    }
+
+    .definition-box {
+        background-color: #f0f8ff;
+        border-left: 5px solid #0264f7;
+        padding: 1em;
+        margin-bottom: 1.5em;
+        font-size: 1.2rem;
+        border-radius: 8px;
+        min-height: 60px;
+    }
+
+    .glossary {
+        margin-top: 1em;
+        font-size: 1.1rem;
+        line-height: 2.2rem;
+    }
+
+    .glossary span {
+        margin: 6px;
+        padding: 8px 12px;
+        background-color: #f0f8ff;
+        border-radius: 6px;
+        display: inline-block;
+        transition: background-color 0.2s;
+        cursor: pointer;
+    }
+
+    .glossary span:hover {
+        background-color: #dbeeff;
+    }
+
+    .term {
+        font-weight: bold;
+        color: #000f99;
+    }
+
+    .definition {
+        display: block;
+        margin-top: 6px;
+        color: #333;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Climate Change and Carbon Chemistry Glossary</h2>
+
+    <div class="definition-box" id="definitionBox">
+      <em>Click a word below to see its definition.</em>
+    </div>
+
+<div class="glossary">
+  <span onclick="showDefinition('Adaptation', 'Adjusting to current or expected climate changes.')">Adaptation</span>
+  <span onclick="showDefinition('Argument', 'A reasoned explanation supported by evidence.')">Argument</span>
+  <span onclick="showDefinition('Atmosphere', 'The layer of gases surrounding the Earth.')">Atmosphere</span>
+  <span onclick="showDefinition('Biosphere', 'All living organisms on Earth and the ecosystems they form.')">Biosphere</span>
+  <span onclick="showDefinition('Carbon cycle', 'The movement of carbon among the atmosphere, oceans, soil, and living organisms.')">Carbon cycle</span>
+  <span onclick="showDefinition('Carbon dioxide', 'A greenhouse gas produced by respiration and combustion.')">Carbon dioxide</span>
+  <span onclick="showDefinition('Carbon reservoir', 'A place where carbon is stored, like forests, oceans, or the atmosphere.')">Carbon reservoir</span>
+  <span onclick="showDefinition('Claim', 'A statement or conclusion that answers a question or problem.')">Claim</span>
+  <span onclick="showDefinition('Climate', 'The long-term average of weather patterns in a region.')">Climate</span>
+  <span onclick="showDefinition('Complete combustion', 'A chemical reaction with oxygen that produces carbon dioxide and water.')">Complete combustion</span>
+  <span onclick="showDefinition('Fossil fuels', 'Energy-rich substances like coal, oil, and natural gas formed from ancient organisms.')">Fossil fuels</span>
+  <span onclick="showDefinition('Geosphere', 'The solid parts of the Earth, including rocks and landforms.')">Geosphere</span>
+  <span onclick="showDefinition('Global warming', 'The rise in average global temperatures due to increased greenhouse gases.')">Global warming</span>
+  <span onclick="showDefinition('Greenhouse gases', 'Gases that trap heat in the atmosphere, contributing to the greenhouse effect.')">Greenhouse gases</span>
+  <span onclick="showDefinition('Heat', 'Energy transferred between substances due to temperature difference.')">Heat</span>
+  <span onclick="showDefinition('Hydrosphere', 'All the water on Earth, including oceans, rivers, lakes, and glaciers.')">Hydrosphere</span>
+  <span onclick="showDefinition('Incomplete combustion', 'A reaction with limited oxygen, producing carbon monoxide or soot.')">Incomplete combustion</span>
+  <span onclick="showDefinition('Methane', 'A potent greenhouse gas produced by livestock and decay of organic matter.')">Methane</span>
+  <span onclick="showDefinition('Mitigation', 'Actions to reduce or prevent greenhouse gas emissions.')">Mitigation</span>
+  <span onclick="showDefinition('Nitrous oxide', 'A greenhouse gas released from soil and agricultural processes.')">Nitrous oxide</span>
+  <span onclick="showDefinition('Ocean acidification', 'The decrease in ocean pH caused by absorption of CO₂ from the atmosphere.')">Ocean acidification</span>
+  <span onclick="showDefinition('pH', 'A scale measuring how acidic or basic a substance is.')">pH</span>
+  <span onclick="showDefinition('Photosynthesis', 'The process by which plants convert sunlight, CO₂, and water into oxygen and glucose.')">Photosynthesis</span>
+  <span onclick="showDefinition('Proof', 'Evidence or reasoning showing something is true.')">Proof</span>
+  <span onclick="showDefinition('Respiration', 'The process of breaking down glucose to release energy, producing CO₂ and water.')">Respiration</span>
+  <span onclick="showDefinition('Temperature', 'A measure of the average kinetic energy of particles in a substance.')">Temperature</span>
+  <span onclick="showDefinition('UV radiation', 'Ultraviolet light from the sun, which can damage living tissue.')">UV radiation</span>
+  <span onclick="showDefinition('Valid', 'Based on logic or fact; reasonable and justifiable.')">Valid</span>
+  <span onclick="showDefinition('Weather', 'The day-to-day atmospheric conditions, such as temperature and precipitation.')">Weather</span>
+</div>
+
+
+
+  <script>
+    function showDefinition(term, definition) {
+      const box = document.getElementById('definitionBox');
+      box.innerHTML = `<span class="term">${term}</span><span class="definition">${definition}</span>`;
+    }
+  </script>
+
+</body>
+</html>
