@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Kahikatea Carbon Calculator</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      background-color: #f5f5f5;
+      padding: 1.5em;
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      padding: 1.5em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 900px;
+      margin: auto;
+    }
+
+    h2 {
+      color: #000305;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      font-size: 0.9em;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 6px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    td[contenteditable="true"] {
+      background-color: #eef6ff;
+      cursor: text;
+    }
+
+    .top-buttons {
+      margin-bottom: 20px;
+    }
+
+    button {
+      margin: 0 0px;
+      padding: 10px 10px;
+      font-size: 1em;
+      border: none;
+      border-radius: 8px;
+      background-color: #007bff;
+      color: white;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    input[type="number"] {
+      padding: 0.5em;
+      font-size: 1em;
+      width: 100px;
+      margin-bottom: 1em;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    #popup, #infoPopup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: white;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      max-width: 500px;
+      text-align: left;
+    }
+
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.4);
+      z-index: 999;
+    }
+
+    .close-btn {
+      background-color: red;
+      float: right;
+      margin-top: -20px;
+      margin-right: -20px;
+      font-size: 1em;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Kahikatea Carbon Calculator</h2>
+    <div class="top-buttons">
+      <button onclick="calculateCarbon()">Calculate CO₂</button>
+      <button onclick="toggleInfo()">About calculator</button>
+
+      <label for="treeCount"><strong>Trees in the stand:</strong></label>
+      <input type="number" id="treeCount" placeholder="e.g. 1000" min="1" />
+    </div>
+
+    <p>Enter sample tree data below (circumference in cm and height in m):</p>
+
+    <table>
+      <thead>
+        <tr><th>#</th><th>Circumference (cm)</th><th>Height (m)</th></tr>
+      </thead>
+      <tbody>
+        <script>
+          for (let i = 1; i <= 15; i++) {
+            document.write(`<tr>
+              <td>${i}</td>
+              <td contenteditable="true" id="circ${i}"></td>
+              <td contenteditable="true" id="height${i}"></td>
+            </tr>`);
+          }
+        </script>
+      </tbody>
+    </table>
+  </div>
+
+  <div id="overlay"></div>
+
+  <div id="popup">
+    <button class="close-btn" onclick="togglePopup()">×</button>
+    <h3>CO₂ Estimate</h3>
+    <p id="popupContent"></p>
+  </div>
+
+  <div id="infoPopup">
+    <button class="close-btn" onclick="toggleInfo()">×</button>
+    <h3>Calculation Details</h3>
+    <p>
+      This calculator estimates above-ground carbon storage in <strong>Kahikatea</strong> trees in Hamilton, NZ.
+      <br><br>
+      <strong>Method:</strong><br>
+      - Convert circumference to diameter<br>
+      - Estimate volume as a cylinder<br>
+      - Biomass = volume × 400 kg/m³<br>
+      - Carbon = 50% of biomass<br>
+      - CO₂ = Carbon × 3.67<br><br>
+      <strong>Stand Estimate:</strong><br>
+      - Averages CO₂ stored per tree from table<br>
+      - Multiplies that average by the number of trees entered
+    </p>
+  </div>
+
+  <script>
+    function calculateCarbon() {
+      let totalCO2 = 0;
+      let validEntries = 0;
+
+      for (let i = 1; i <= 15; i++) {
+        const circCell = document.getElementById('circ' + i);
+        const heightCell = document.getElementById('height' + i);
+        const circ = parseFloat(circCell.innerText);
+        const height = parseFloat(heightCell.innerText);
+
+        if (!isNaN(circ) && !isNaN(height)) {
+          const diameter = (circ / 100) / Math.PI;
+          const radius = diameter / 2;
+          const volume = Math.PI * Math.pow(radius, 2) * height;
+          const biomass = volume * 400;
+          const carbon = biomass * 0.5;
+          const co2 = carbon * 3.67;
+          totalCO2 += co2;
+          validEntries++;
+        }
+      }
+
+      let message = "";
+      if (validEntries === 0) {
+        message = "Please enter valid data in the table to perform calculation.";
+      } else {
+        const avgCO2 = totalCO2 / validEntries;
+        message = `Average CO₂ per tree from sample: ${avgCO2.toFixed(2)} kg`;
+
+        const count = parseInt(document.getElementById("treeCount").value);
+        if (!isNaN(count) && count > 0) {
+          const standCO2 = avgCO2 * count;
+          message += `<br><br><strong>Estimated Total CO₂ for ${count} trees: ${standCO2.toFixed(0)} kg</strong>`;
+        } else {
+          message += "<br><br><em>No valid stand size entered.</em>";
+        }
+      }
+
+      document.getElementById("popupContent").innerHTML = message;
+      togglePopup();
+    }
+
+    function togglePopup() {
+      const popup = document.getElementById("popup");
+      const overlay = document.getElementById("overlay");
+      const isVisible = popup.style.display === "block";
+      popup.style.display = isVisible ? "none" : "block";
+      overlay.style.display = isVisible ? "none" : "block";
+    }
+
+    function toggleInfo() {
+      const popup = document.getElementById("infoPopup");
+      const overlay = document.getElementById("overlay");
+      const isVisible = popup.style.display === "block";
+      popup.style.display = isVisible ? "none" : "block";
+      overlay.style.display = isVisible ? "none" : "block";
+    }
+  </script>
+</body>
+</html>
