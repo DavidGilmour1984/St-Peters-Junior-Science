@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Drag-and-Drop Cloze Quiz</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      padding: 2em;
+      background-color: #f5f5f5;
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 700px;
+      margin: auto;
+    }
+
+    .question {
+      display: none;
+    }
+
+    .question.active {
+      display: block;
+    }
+
+    .blank {
+      display: inline-block;
+      width: 120px;
+      border-bottom: 2px dashed #999;
+      margin: 0 5px;
+      min-height: 25px;
+      vertical-align: middle;
+      background-color: #f0f0f0;
+      padding: 4px 6px;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    .word-bank {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .draggable {
+      background: #e0e0e0;
+      border-radius: 8px;
+      padding: 10px 15px;
+      cursor: grab;
+      font-size: 1rem;
+      user-select: none;
+      transition: background 0.3s;
+    }
+
+    .draggable:hover {
+      background: #d0d0d0;
+    }
+
+    .correct {
+      background: #a0e6a0 !important;
+    }
+
+    .wrong {
+      background: #e6a0a0 !important;
+    }
+
+    .controls {
+      margin-top: 20px;
+    }
+
+    button {
+      margin-top: 1em;
+      padding: 0.8em 1.6em;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #feedback {
+      margin-top: 1em;
+      font-weight: bold;
+      color: #444;
+    }
+
+    #progress {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #444;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div id="quiz-container"></div>
+    <div id="progress">Progress: 1/15</div> <!-- Progress section -->
+  </div>
+
+
+  <script>
+  const questions = [
+  {
+    sentence: `Aerobic respiration is a process where <span class="blank" data-answer="glucose"></span> and oxygen are used to release <span class="blank" data-answer="energy"></span> in cells, producing carbon dioxide and <span class="blank" data-answer="water"></span> as waste products.`,
+    wordBank: ["glucose", "oxygen", "energy", "carbon dioxide", "water"]
+  },
+  {
+    sentence: `The reactants of aerobic respiration are <span class="blank" data-answer="oxygen"></span> and glucose, while the products are <span class="blank" data-answer="carbon dioxide"></span>, water, and <span class="blank" data-answer="energy"></span>.`,
+    wordBank: ["oxygen", "glucose", "carbon dioxide", "energy", "water"]
+  },
+  {
+    sentence: `The word equation for aerobic respiration is: <span class="blank" data-answer="glucose"></span> + <span class="blank" data-answer="oxygen"></span> → <span class="blank" data-answer="carbon dioxide"></span> + water + energy.`,
+    wordBank: ["carbon dioxide", "oxygen", "glucose", "water", "energy"]
+  },
+  {
+    sentence: `Respiration is essential for life because it provides <span class="blank" data-answer="energy"></span> for processes like movement, <span class="blank" data-answer="growth"></span>, and repair of <span class="blank" data-answer="cells"></span>.`,
+    wordBank: ["cells", "energy", "growth", "movement", "repair"]
+  },
+  {
+    sentence: `Digestion is the breakdown of large food <span class="blank" data-answer="molecules"></span> into smaller ones that can be <span class="blank" data-answer="absorbed"></span> into the bloodstream.`,
+    wordBank: ["molecules", "absorbed", "digested", "bloodstream"]
+  },
+  {
+    sentence: `Digestion is needed to make food <span class="blank" data-answer="soluble"></span> so it can pass through the <span class="blank" data-answer="intestine"></span> walls and provide <span class="blank" data-answer="nutrients"></span> for the body.`,
+    wordBank: ["nutrients", "soluble", "intestine", "digestive", "absorb"]
+  },
+  {
+    sentence: `Digestion provides <span class="blank" data-answer="glucose"></span> for aerobic respiration, which occurs in the <span class="blank" data-answer="cells"></span> and releases <span class="blank" data-answer="energy"></span>.`,
+    wordBank: ["glucose", "cells", "energy", "oxygen"]
+  },
+  {
+    sentence: `Organs involved in digestion include the <span class="blank" data-answer="stomach"></span>, <span class="blank" data-answer="small intestine"></span>, and <span class="blank" data-answer="liver"></span>, located in the abdominal area.`,
+    wordBank: ["small intestine", "stomach", "liver", "rectum", "mouth"]
+  },
+  {
+    sentence: `The <span class="blank" data-answer="stomach"></span> breaks down food with acid, the <span class="blank" data-answer="liver"></span> produces bile, and the <span class="blank" data-answer="pancreas"></span> releases enzymes.`,
+    wordBank: ["liver", "stomach", "pancreas", "oesophagus"]
+  },
+  {
+    sentence: `The <span class="blank" data-answer="small intestine"></span> has a large surface area with <span class="blank" data-answer="villi"></span> that help absorb nutrients into the <span class="blank" data-answer="bloodstream"></span>.`,
+    wordBank: ["villi", "bloodstream", "small intestine", "enzymes"]
+  },
+  {
+    sentence: `Food molecules include <span class="blank" data-answer="carbohydrates"></span>, <span class="blank" data-answer="lipids"></span>, and <span class="blank" data-answer="proteins"></span> for energy and growth.`,
+    wordBank: ["proteins", "lipids", "carbohydrates", "vitamins", "minerals"]
+  },
+  {
+    sentence: `Carbohydrates are found in bread, <span class="blank" data-answer="proteins"></span> in eggs, and <span class="blank" data-answer="fats"></span> in butter.`,
+    wordBank: ["fats", "proteins", "carbohydrates", "minerals", "vitamins"]
+  },
+  {
+    sentence: `Diffusion is the movement of particles from a <span class="blank" data-answer="high"></span> to a <span class="blank" data-answer="low"></span> concentration. Absorption is the uptake of these particles into the <span class="blank" data-answer="bloodstream"></span>.`,
+    wordBank: ["high", "low", "bloodstream", "villi"]
+  },
+  {
+    sentence: `The <span class="blank" data-answer="villi"></span> have a large surface area and rich <span class="blank" data-answer="blood supply"></span> to help with diffusion and <span class="blank" data-answer="absorption"></span> of nutrients.`,
+    wordBank: ["absorption", "villi", "blood supply", "surface area"]
+  },
+  {
+    sentence: `Gas exchange is the swapping of <span class="blank" data-answer="oxygen"></span> and <span class="blank" data-answer="carbon dioxide"></span> in the <span class="blank" data-answer="alveoli"></span>.`,
+    wordBank: ["alveoli", "carbon dioxide", "oxygen", "lungs"]
+  },
+  {
+    sentence: `The lungs contain <span class="blank" data-answer="bronchi"></span>, <span class="blank" data-answer="bronchioles"></span> and <span class="blank" data-answer="alveoli"></span> which work together for efficient gas exchange.`,
+    wordBank: ["alveoli", "bronchi", "bronchioles", "lungs"]
+  },
+  {
+    sentence: `The structure of the alveoli – large surface area, thin walls, and moist lining – helps <span class="blank" data-answer="diffusion"></span> of gases like <span class="blank" data-answer="oxygen"></span> into the <span class="blank" data-answer="blood"></span>.`,
+    wordBank: ["blood", "oxygen", "diffusion", "alveoli"]
+  },
+  {
+    sentence: `Breathing is the physical process of taking in <span class="blank" data-answer="oxygen"></span> and removing <span class="blank" data-answer="carbon dioxide"></span> using the <span class="blank" data-answer="lungs"></span>.`,
+    wordBank: ["carbon dioxide", "lungs", "oxygen", "exchange"]
+  },
+  {
+    sentence: `During exercise, breathing rate increases to supply more <span class="blank" data-answer="oxygen"></span> for <span class="blank" data-answer="respiration"></span> and remove <span class="blank" data-answer="carbon dioxide"></span>.`,
+    wordBank: ["respiration", "oxygen", "carbon dioxide", "glucose"]
+  },
+  {
+    sentence: `Circulation is the transport of <span class="blank" data-answer="blood"></span> around the body to deliver <span class="blank" data-answer="oxygen"></span> and glucose to <span class="blank" data-answer="cells"></span>.`,
+    wordBank: ["oxygen", "cells", "blood", "nutrients"]
+  },
+  {
+    sentence: `Circulation helps provide cells with <span class="blank" data-answer="oxygen"></span> and glucose for respiration and removes waste like <span class="blank" data-answer="carbon dioxide"></span> through the <span class="blank" data-answer="bloodstream"></span>.`,
+    wordBank: ["oxygen", "carbon dioxide", "bloodstream", "cells"]
+  },
+  {
+    sentence: `Heart rate increases during exercise to deliver <span class="blank" data-answer="oxygen"></span> faster to <span class="blank" data-answer="muscles"></span> and remove <span class="blank" data-answer="waste"></span>.`,
+    wordBank: ["oxygen", "waste", "muscles", "blood"]
+  },
+  {
+    sentence: `Organs in the circulatory system include the <span class="blank" data-answer="heart"></span>, <span class="blank" data-answer="arteries"></span>, <span class="blank" data-answer="veins"></span>, and <span class="blank" data-answer="capillaries"></span>.`,
+    wordBank: ["capillaries", "veins", "arteries", "heart", "lungs"]
+  },
+  {
+    sentence: `The <span class="blank" data-answer="heart"></span> pumps <span class="blank" data-answer="blood"></span> through the body using its <span class="blank" data-answer="muscular walls"></span>.`,
+    wordBank: ["muscular walls", "heart", "blood", "oxygen"]
+  }
+];
+
+
+    let currentIndex = 0;
+
+    function renderQuestion(index) {
+      const q = questions[index];
+      const container = document.getElementById('quiz-container');
+
+      const qDiv = document.createElement('div');
+      qDiv.classList.add('question');
+      if (index === 0) qDiv.classList.add('active');
+
+      const sentenceHTML = `<p>${q.sentence}</p>`;
+      const wordBankHTML = q.wordBank.map(word =>
+        `<div class="draggable" draggable="true" ondragstart="drag(event)" id="word-${word}">${word}</div>`
+      ).join('');
+
+      qDiv.innerHTML = `
+        ${sentenceHTML}
+        <div class="word-bank">${wordBankHTML}</div>
+        <div class="controls">
+          <button onclick="checkAnswers(this)">Check Answer</button>
+        </div>
+      `;
+
+      container.appendChild(qDiv);
+
+      const blanks = qDiv.querySelectorAll('.blank');
+      blanks.forEach(blank => {
+        blank.setAttribute('ondragover', 'allowDrop(event)');
+        blank.setAttribute('ondrop', 'drop(event)');
+      });
+
+      updateProgress(); // Update progress when rendering each question
+    }
+
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+
+    function drag(ev) {
+      ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+      ev.preventDefault();
+      const data = ev.dataTransfer.getData("text");
+      const dragged = document.getElementById(data);
+
+      // If already filled, remove the old word
+      if (ev.target.firstChild) {
+        ev.target.innerHTML = '';
+      }
+
+      const clone = dragged.cloneNode(true);
+      clone.setAttribute("draggable", "false");
+      clone.style.cursor = "default";
+      clone.classList.remove("draggable");
+      ev.target.innerHTML = '';
+      ev.target.appendChild(clone);
+    }
+
+    function checkAnswers(button) {
+      const questionDiv = button.closest('.question');
+      const blanks = questionDiv.querySelectorAll('.blank');
+      let allCorrect = true;
+
+      blanks.forEach(blank => {
+        const correctAnswer = blank.dataset.answer.toLowerCase();
+        const userAnswer = blank.textContent.trim().toLowerCase();
+
+        if (userAnswer === correctAnswer) {
+          blank.classList.add('correct');
+        } else {
+          allCorrect = false;
+        }
+      });
+
+      if (allCorrect) {
+        setTimeout(() => nextQuestion(), 600);
+      } else {
+        // Reset wrong answers after short delay
+        setTimeout(() => {
+          blanks.forEach(blank => {
+            blank.innerHTML = '';
+            blank.style.borderColor = '#000';
+            blank.classList.remove('correct');
+          });
+          // Re-add word bank
+          const wordBank = questionDiv.querySelector('.word-bank');
+          wordBank.innerHTML = '';
+          const words = questions[currentIndex].wordBank;
+          words.forEach(word => {
+            const wordDiv = document.createElement('div');
+            wordDiv.className = 'draggable';
+            wordDiv.draggable = true;
+            wordDiv.id = `word-${word}`;
+            wordDiv.ondragstart = drag;
+            wordDiv.textContent = word;
+            wordBank.appendChild(wordDiv);
+          });
+        }, 800);
+      }
+    }
+
+    function nextQuestion() {
+      const questionsDivs = document.querySelectorAll('.question');
+      questionsDivs[currentIndex].classList.remove('active');
+      currentIndex++;
+      if (currentIndex < questions.length) {
+        questionsDivs[currentIndex].classList.add('active');
+      } else {
+        document.getElementById('quiz-container').innerHTML = "<h2>Ka pai! You’ve finished the quiz!</h2>";
+      }
+      updateProgress(); // Update progress when moving to next question
+    }
+
+    function updateProgress() {
+      const progressElement = document.getElementById('progress');
+      progressElement.textContent = `Progress: ${currentIndex + 1}/${questions.length}`;
+    }
+
+    // Render all questions at load
+    questions.forEach((_, i) => renderQuestion(i)); 
+    </script>
+</body>
+</html>
