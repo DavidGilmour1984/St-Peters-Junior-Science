@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Drag-and-Drop Cloze Quiz</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      padding: 2em;
+      background-color: #f5f5f5;
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 700px;
+      margin: auto;
+    }
+
+    .question {
+      display: none;
+    }
+
+    .question.active {
+      display: block;
+    }
+
+    .blank {
+      display: inline-block;
+      width: 120px;
+      border-bottom: 2px dashed #999;
+      margin: 0 5px;
+      min-height: 25px;
+      vertical-align: middle;
+      background-color: #f0f0f0;
+      padding: 4px 6px;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    .word-bank {
+      margin-top: 20px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .draggable {
+      background: #e0e0e0;
+      border-radius: 8px;
+      padding: 10px 15px;
+      cursor: grab;
+      font-size: 1rem;
+      user-select: none;
+      transition: background 0.3s;
+    }
+
+    .draggable:hover {
+      background: #d0d0d0;
+    }
+
+    .correct {
+      background: #a0e6a0 !important;
+    }
+
+    .wrong {
+      background: #e6a0a0 !important;
+    }
+
+    .controls {
+      margin-top: 20px;
+    }
+
+    button {
+      margin-top: 1em;
+      padding: 0.8em 1.6em;
+      font-size: 1rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    #feedback {
+      margin-top: 1em;
+      font-weight: bold;
+      color: #444;
+    }
+
+    #progress {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #444;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <div id="quiz-container"></div>
+    <div id="progress">Progress: 1/15</div> <!-- Progress section -->
+  </div>
+
+
+  <script>
+  const questions = [
+  {
+    sentence: `The four systems of Earth include the <span class="blank" data-answer="biosphere"></span> (the system containing all living things), geosphere (the solid Earth), <span class="blank" data-answer="hydrosphere"></span> (the system containing all water), and atmosphere (the gases surrounding the Earth). These systems often <span class="blank" data-answer="overlap"></span> and interact with each other.`,
+    wordBank: ["biosphere", "hydrosphere", "overlap", "cryosphere", "Geosphere"]
+  },
+  {
+    sentence: `The Sun is the main source of <span class="blank" data-answer="heat"></span> energy for Earth. Some energy is <span class="blank" data-answer="reflected"></span> by clouds and ice, while some is <span class="blank" data-answer="absorbed"></span> by the land and ocean, warming the planet.`,
+    wordBank: ["heat", "reflected", "absorbed", "radiated", "stored"]
+  },
+  {
+    sentence: `<span class="blank" data-answer="Weather"></span> refers to the short-term atmospheric conditions in a specific place, while <span class="blank" data-answer="climate"></span> refers to the long-term patterns of weather over decades in a particular region.`,
+    wordBank: ["Weather", "climate", "seasons", "storms"]
+  },
+  {
+    sentence: `Carbon can be found in different forms such as <span class="blank" data-answer="carbon dioxide"></span> in the air, <span class="blank" data-answer="carbonates"></span> in rocks, and <span class="blank" data-answer="glucose"></span> in living organisms.`,
+    wordBank: ["carbon dioxide", "carbonates", "glucose", "coal", "methane"]
+  },
+  {
+    sentence: `Carbon is an <span class="blank" data-answer="essential"></span> element for life and moves between the <span class="blank" data-answer="soil"></span>, air, and <span class="blank" data-answer="organisms"></span> through the carbon cycle, a crucial process for sustaining life.`,
+    wordBank: ["essential", "soil", "organisms", "water", "atmosphere"]
+  },
+  {
+    sentence: `Major carbon reservoirs include <span class="blank" data-answer="fossil fuels"></span>, which are formed from ancient plants and animals, ocean water, and <span class="blank" data-answer="limestone"></span> which stores carbon as carbonates.`,
+    wordBank: ["fossil fuels", "limestone", "plants", "methane"]
+  },
+  {
+    sentence: `A process that releases carbon into the atmosphere is <span class="blank" data-answer="combustion"></span> (burning), while a process that removes carbon is <span class="blank" data-answer="photosynthesis"></span> (used by plants to produce glucose from carbon dioxide and sunlight).`,
+    wordBank: ["combustion", "photosynthesis", "respiration", "evaporation"]
+  },
+  {
+    sentence: `Combustion is the burning of fuels in <span class="blank" data-answer="oxygen"></span> to release <span class="blank" data-answer="energy"></span> in the form of heat and light.`,
+    wordBank: ["oxygen", "energy", "carbon", "flame"]
+  },
+  {
+    sentence: `Fossil fuels such as coal, oil, and gas are made from <span class="blank" data-answer="carbon"></span>-based compounds formed from ancient <span class="blank" data-answer="organisms"></span>, such as plants and animals.`,
+    wordBank: ["carbon", "organisms", "rocks", "sand", "plants"]
+  },
+  {
+    sentence: `Complete combustion of a fuel produces <span class="blank" data-answer="carbon dioxide"></span> and water, while incomplete combustion can produce harmful substances like <span class="blank" data-answer="carbon monoxide"></span> and soot.`,
+    wordBank: ["carbon dioxide", "carbon monoxide", "soot", "ash"]
+  },
+  {
+    sentence: `The word equation for complete combustion is: fuel + <span class="blank" data-answer="oxygen"></span> → carbon dioxide + <span class="blank" data-answer="water"></span> + energy (heat and light).`,
+    wordBank: ["oxygen", "water", "carbon dioxide", "energy", "heat"]
+  },
+  {
+    sentence: `Human activities like <span class="blank" data-answer="burning fossil fuels"></span> (such as coal and oil) and <span class="blank" data-answer="deforestation"></span> (removal of trees) are adding excess carbon to the atmosphere at high rates.`,
+    wordBank: ["burning fossil fuels", "deforestation", "mining", "pollution"]
+  },
+  {
+    sentence: `Greenhouse gases in the atmosphere, such as <span class="blank" data-answer="carbon dioxide"></span>, <span class="blank" data-answer="methane"></span>, and <span class="blank" data-answer="nitrous oxide"></span>, trap heat and contribute to global warming.`,
+    wordBank: ["carbon dioxide", "methane", "nitrous oxide", "oxygen"]
+  },
+  {
+    sentence: `The natural <span class="blank" data-answer="greenhouse effect"></span> keeps Earth warm enough for life. Without it, the planet would be too <span class="blank" data-answer="cold"></span> to support most forms of life.`,
+    wordBank: ["greenhouse effect", "cold", "hot", "wet"]
+  },
+  {
+    sentence: `Scientists study ice cores, tree <span class="blank" data-answer="rings"></span>, and sediment layers as evidence of past <span class="blank" data-answer="climate"></span> changes over centuries.`,
+    wordBank: ["rings", "climate", "temperature", "cores"]
+  },
+  {
+    sentence: `In recent years, atmospheric <span class="blank" data-answer="carbon dioxide"></span> levels have risen due to human activities, and surface <span class="blank" data-answer="temperature"></span> has increased, contributing to global warming.`,
+    wordBank: ["carbon dioxide", "temperature", "methane", "pressure"]
+  },
+  {
+    sentence: `Ocean acidification occurs when carbon dioxide <span class="blank" data-answer="dissolves"></span> in seawater, making it more <span class="blank" data-answer="acidic"></span> and harming marine life, particularly shelled animals like corals and mollusks.`,
+    wordBank: ["dissolves", "acidic", "basic", "evaporates"]
+  },
+  {
+    sentence: `Climate change in New Zealand may lead to <span class="blank" data-answer="sea level rise"></span>, more extreme <span class="blank" data-answer="weather"></span> events, and effects on native <span class="blank" data-answer="species"></span> of plants and animals.`,
+    wordBank: ["sea level rise", "weather", "species", "erosion"]
+  },
+  {
+    sentence: `To reduce carbon emissions, we can switch to <span class="blank" data-answer="renewable"></span> energy sources like solar and wind, improve <span class="blank" data-answer="efficiency"></span> in industries, and plant more <span class="blank" data-answer="trees"></span> to absorb CO2.`,
+    wordBank: ["renewable", "efficiency", "trees", "coal", "transport"]
+  },
+  {
+    sentence: `We can adapt to the impacts of climate change by improving <span class="blank" data-answer="infrastructure"></span> (like buildings and roads), changing <span class="blank" data-answer="agriculture"></span> practices to be more sustainable, and protecting <span class="blank" data-answer="coasts"></span> from rising sea levels.`,
+    wordBank: ["infrastructure", "agriculture", "coasts", "weather"]
+  }
+];
+
+
+
+    let currentIndex = 0;
+
+    function renderQuestion(index) {
+      const q = questions[index];
+      const container = document.getElementById('quiz-container');
+
+      const qDiv = document.createElement('div');
+      qDiv.classList.add('question');
+      if (index === 0) qDiv.classList.add('active');
+
+      const sentenceHTML = `<p>${q.sentence}</p>`;
+      const wordBankHTML = q.wordBank.map(word =>
+        `<div class="draggable" draggable="true" ondragstart="drag(event)" id="word-${word}">${word}</div>`
+      ).join('');
+
+      qDiv.innerHTML = `
+        ${sentenceHTML}
+        <div class="word-bank">${wordBankHTML}</div>
+        <div class="controls">
+          <button onclick="checkAnswers(this)">Check Answer</button>
+        </div>
+      `;
+
+      container.appendChild(qDiv);
+
+      const blanks = qDiv.querySelectorAll('.blank');
+      blanks.forEach(blank => {
+        blank.setAttribute('ondragover', 'allowDrop(event)');
+        blank.setAttribute('ondrop', 'drop(event)');
+      });
+
+      updateProgress(); // Update progress when rendering each question
+    }
+
+    function allowDrop(ev) {
+      ev.preventDefault();
+    }
+
+    function drag(ev) {
+      ev.dataTransfer.setData("text", ev.target.id);
+    }
+
+    function drop(ev) {
+      ev.preventDefault();
+      const data = ev.dataTransfer.getData("text");
+      const dragged = document.getElementById(data);
+
+      // If already filled, remove the old word
+      if (ev.target.firstChild) {
+        ev.target.innerHTML = '';
+      }
+
+      const clone = dragged.cloneNode(true);
+      clone.setAttribute("draggable", "false");
+      clone.style.cursor = "default";
+      clone.classList.remove("draggable");
+      ev.target.innerHTML = '';
+      ev.target.appendChild(clone);
+    }
+
+    function checkAnswers(button) {
+      const questionDiv = button.closest('.question');
+      const blanks = questionDiv.querySelectorAll('.blank');
+      let allCorrect = true;
+
+      blanks.forEach(blank => {
+        const correctAnswer = blank.dataset.answer.toLowerCase();
+        const userAnswer = blank.textContent.trim().toLowerCase();
+
+        if (userAnswer === correctAnswer) {
+          blank.classList.add('correct');
+        } else {
+          allCorrect = false;
+        }
+      });
+
+      if (allCorrect) {
+        setTimeout(() => nextQuestion(), 600);
+      } else {
+        // Reset wrong answers after short delay
+        setTimeout(() => {
+          blanks.forEach(blank => {
+            blank.innerHTML = '';
+            blank.style.borderColor = '#000';
+            blank.classList.remove('correct');
+          });
+          // Re-add word bank
+          const wordBank = questionDiv.querySelector('.word-bank');
+          wordBank.innerHTML = '';
+          const words = questions[currentIndex].wordBank;
+          words.forEach(word => {
+            const wordDiv = document.createElement('div');
+            wordDiv.className = 'draggable';
+            wordDiv.draggable = true;
+            wordDiv.id = `word-${word}`;
+            wordDiv.ondragstart = drag;
+            wordDiv.textContent = word;
+            wordBank.appendChild(wordDiv);
+          });
+        }, 800);
+      }
+    }
+
+    function nextQuestion() {
+      const questionsDivs = document.querySelectorAll('.question');
+      questionsDivs[currentIndex].classList.remove('active');
+      currentIndex++;
+      if (currentIndex < questions.length) {
+        questionsDivs[currentIndex].classList.add('active');
+      } else {
+        document.getElementById('quiz-container').innerHTML = "<h2>Ka pai! You’ve finished the quiz!</h2>";
+      }
+      updateProgress(); // Update progress when moving to next question
+    }
+
+    function updateProgress() {
+      const progressElement = document.getElementById('progress');
+      progressElement.textContent = `Progress: ${currentIndex + 1}/${questions.length}`;
+    }
+
+    // Render all questions at load
+    questions.forEach((_, i) => renderQuestion(i)); 
+    </script>
+</body>
+</html>
