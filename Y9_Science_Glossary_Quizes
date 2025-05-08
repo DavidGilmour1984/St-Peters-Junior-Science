@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Definition Quiz</title>
+  <style>
+  body {
+    font-family: Helvetica, sans-serif;
+    margin: 0;
+    padding: 2em;
+    background-color: #f0f2f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .card {
+    background: #fff;
+    padding: 2.5em;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 640px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+  }
+
+  h2 {
+    margin-bottom: 1.5em;
+    font-size: 2rem;
+    color: #333;
+  }
+
+  .select-topic {
+    display: block;
+    width: 100%;
+    padding: 1em;
+    margin: 0.5em 0;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(135deg, #4a90e2, #007aff);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+  }
+
+  .select-topic:hover {
+    background: linear-gradient(135deg, #3b7bd8, #0066cc);
+    transform: scale(1.02);
+  }
+
+.option {
+  /* remove display: block */
+  margin: 0.5em;
+  padding: 0.9em;
+  background: #e0e0e0;
+  border: none;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+
+  .option:hover {
+    background: #d0d0d0;
+    transform: scale(1.01);
+  }
+
+  .correct {
+    background: #b4f0b4 !important;
+    color: #104210;
+    font-weight: bold;
+  }
+
+  .wrong {
+    background: #f7b4b4 !important;
+    color: #7a1212;
+    font-weight: bold;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  #feedback {
+    margin-top: 1em;
+    font-size: 1.1rem;
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+  <div class="card" id="start-screen">
+    <h2>Y9 Science Terminology Quizzes</h2>
+    <button class="select-topic" onclick="startQuiz('matter')">Topic 1: Matter</button>
+    <button class="select-topic" onclick="startQuiz('energy')">Topic 2: Energy</button>
+    <button class="select-topic" onclick="startQuiz('climate')">Topic 3: Carbon Chemistry and Climate Change</button>
+    <button class="select-topic" onclick="startQuiz('space')">Topic 4: Matariki</button>
+    <button class="select-topic" onclick="startQuiz('microbiology')">Topic 5: Microorganisms</button>
+    <button class="select-topic" onclick="startQuiz('waves')">Topic 6: Waves</button>
+    <button class="select-topic" onclick="startQuiz('biomes')">Topic 7: Ecology of Maungatautari</button>
+  </div>
+
+  <div class="card hidden" id="quiz-screen">
+    <h2 id="definition">Loading...</h2>
+    <div id="options"></div>
+    <p id="feedback"></p>
+  </div>
+  <script>
+    const data = {
+      climate: {
+        "Climate": "The long-term pattern of weather in a particular area, usually measured over 30 years or more.",
+        "Weather": "The day-to-day conditions of the atmosphere, including temperature, rainfall, wind, and cloud cover.",
+        "Atmosphere": "The layer of gases surrounding Earth, which includes air, water vapor, and other particles.",
+        "Hydrosphere": "All the water on Earth’s surface, underground, and in the air.",
+        "Geosphere": "The solid parts of Earth, including rocks, minerals, soil, and landforms.",
+        "Biosphere": "All living things on Earth, including plants, animals, and microorganisms.",
+        "Carbon cycle": "The natural process by which carbon moves between the atmosphere, biosphere, oceans, and geosphere.",
+        "Photosynthesis": "The process by which green plants use sunlight to turn carbon dioxide and water into glucose and oxygen.",
+        "Respiration": "The process by which living organisms release energy by breaking down glucose, producing carbon dioxide and water.",
+        "Complete combustion": "Burning a fuel in plenty of oxygen, producing carbon dioxide and water.",
+        "Incomplete combustion": "Burning a fuel in limited oxygen, producing carbon monoxide, carbon (soot), and less energy.",
+        "Heat": "A form of energy that causes particles to move faster; transferred from hot to cold areas.",
+        "Carbon reservoir": "A place where carbon is stored, such as the atmosphere, oceans, forests, or fossil fuels underground.",
+        "Temperature": "A measure of how hot or cold something is; linked to the average energy of particles.",
+        "Ocean acidification": "The process where the ocean becomes more acidic due to absorbing more carbon dioxide from the atmosphere.",
+        "pH": "A scale (0–14) that measures how acidic or basic a substance is.",
+        "UV radiation": "Invisible rays from the sun that can damage living tissue; blocked in part by the ozone layer.",
+        "Fossil fuels": "Natural fuels such as coal, oil, and natural gas formed from the remains of ancient organisms.",
+        "Greenhouse gases": "Gases that trap heat in Earth’s atmosphere, helping to keep the planet warm.",
+        "Carbon dioxide": "A greenhouse gas released by burning fossil fuels, respiration, and other processes.",
+        "Methane": "A powerful greenhouse gas released by livestock, rice fields, and landfills.",
+        "Nitrous oxide": "A greenhouse gas released from fertilizers, farming, and industrial processes.",
+        "Global warming": "The long-term rise in Earth's average surface temperature due to increased greenhouse gases.",
+        "Mitigation": "Actions taken to reduce or prevent the release of greenhouse gases.",
+        "Adaptation": "Adjusting to the effects of climate change.",
+        "Argument": "A reason or set of reasons given to support an idea or viewpoint.",
+        "Proof": "Strong evidence that shows something is true beyond reasonable doubt.",
+        "Claim": "A statement or conclusion that answers a question or problem.",
+        "Valid": "Logically sound; based on truth or fact."
+      },
+      energy: {
+        "Energy": "A physical quantity that is the ability to work or make things happen.",
+        "Joules": "Unit of energy (J).",
+        "Active Energy": "Energy that can be seen by the movement of particles or objects.",
+        "Potential Energy": "Energy that is stored.",
+        "Kinetic Energy": "Energy that an object has because it is moving.",
+        "Electrical Energy": "Energy resulting from the flow of charge.",
+        "Sound Energy": "Energy resulting from mechanical vibrations.",
+        "Thermal (Heat) Energy": "Energy resulting from the vibration of particles.",
+        "Radiant (Light) Energy": "Energy that is in the form of electromagnetic radiation (waves).",
+        "Gravitational Potential Energy": "Energy that an object has because of its position in a gravitational field.",
+        "Chemical Potential Energy": "Energy stored in the chemical bonds of a substance.",
+        "Elastic Potential Energy": "Energy stored as a result of stretching or compressing an object.",
+        "Magnetic Potential Energy": "Energy that a magnetic object has because of its position in a magnetic field.",
+        "Nuclear Potential Energy": "Energy stored in the nucleus of an atom.",
+        "Conduction": "The transfer of energy due to the collision of particles in a substance.",
+        "Convection": "The transfer of energy due to the bulk movement of particles within liquids and gases.",
+        "Radiation": "The transfer of energy due to electromagnetic radiation, not particles.",
+        "Conservation of Energy": "The total energy of a system remains constant.",
+        "Transformed Energy": "Energy changes from one type to another.",
+        "Transferred Energy": "Energy type stays the same but is moved from one object to another.",
+        "Energy Efficiency": "The measure of how much input energy becomes useful energy.",
+        "Useful Energy": "The amount of energy available for the intended purpose.",
+        "Wasted Energy": "The amount of energy lost from the input energy and not available for the intended purpose.",
+        "Sankey Diagram": "A type of energy transfer diagram in which the width of the arrows is proportional to the amount of energy.",
+        "Energy Source": "A source from which useful energy can be extracted.",
+        "Renewable Energy": "Energy that comes from natural sources or processes that are constantly replaced.",
+        "Non-Renewable Energy": "Energy that comes from natural sources of processes that will run out or not be replaced for thousands/millions of years.",
+        "Hydroelectric Energy": "Energy produced by hydroelectric dams is from the flowing or falling of water.",
+        "Wind Energy": "Energy produced by wind turbines is from the flowing of air, wind.",
+        "Solar Energy": "Energy produced by solar panels is from the radiant light of the Sun.",
+        "Geothermal Energy": "Energy that is from the thermal energy generated and stored in the Earth.",
+        "Tidal Energy": "Energy produced by the natural rise and fall of the oceans tides and currents.",
+        "Wave Energy": "Energy produced by the movement of ocean surface waves.",
+        "Fossil Fuel": "Hydrocarbon energy sources formed over millions of years from the remains of dead plants and animals.",
+        "Coal": "A fossil fuel in the form of black sedimentary rock formed from the remains of dead plants.",
+        "Oil": "A fossil fuel in the form of a thick black liquid formed from the remains of dead marine organisms.",
+        "Natural Gas": "A fossil fuel in the form of a gas formed from the remains of dead marine organisms.",
+        "Nuclear Energy": "Energy produced in a nuclear power station that is from the heat released in nuclear reactions."
+      },
+        matter: {
+        "volume": "The amount of space an object takes up. Measured in mL.",
+        "mass": "The amount of matter an object is made of. Measured in kg.",
+        "atom": "A single unit of matter. Atoms build all of the “stuff” in the universe.",
+        "electron": "A very small, negatively charged subatomic particle found orbiting the nucleus of an atom.",
+        "proton": "A small, positively charged subatomic particle found in the nucleus of an atom.",
+        "neutron": "A small subatomic particle, with no charge, found in the nucleus of an atom.",
+        "nucleus": "A small, dense structure found in the centre of an atom.",
+        "particle": "Any small unit of matter. Particles include atoms, molecules, electrons, protons and neutrons.",
+        "Molecule": "A unit of matter made up of two or more atoms joined together by chemical bonds.",
+        "element": "A substance made of one type of atom only. E.g. Gold",
+        "compound": "A substance made of molecules. The atoms within the molecule are not the same. E.g. Sodium chloride",
+        "mixture": "A substance made up of different particles. E.g. air",
+        "bond": "An electrostatic attraction between atoms that holds them together",
+        "Physical change": "A change in the physical properties of a substance, e.g. melting.",
+        "Chemical change": "A change to the chemical arrangement of the molecules so that reactant chemicals are rearranged to form new product chemicals, with different chemical properties.",
+        "reactant": "A chemical present at the start of a reaction",
+        "product": "A chemical present at the end of a reaction",
+        "reaction": "A process that rearranges the parts of the reactants to form new products.",
+        "observation": "Something that occurs that can be observed using any of the senses. Observations can be direct or indirect."
+      },
+      space: {
+  "Solar system": "The Sun and its orbiting celestial objects.",
+  "Star": "A very hot ball of matter undergoing nuclear fusion to produce heat and light.",
+  "Atom": "The smallest particle of a chemical element that can exist.",
+  "Nucleus": "The small, dense region consisting of protons and neutrons at the center of an atom.",
+  "Proton": "A subatomic particle with a positive charge.",
+  "Neutron": "A subatomic particle with a neutral charge.",
+  "Electron": "A subatomic particle with a negative charge.",
+  "Element": "A pure substance consisting only of atoms that all have the same number of protons in their atomic nuclei.",
+  "Nuclear fusion": "The process of joining atomic nuclei of low atomic number to form a heavier nucleus with the release of energy.",
+  "Energy": "The capacity for doing work. Can be in many forms including kinetic, gravitational potential, chemical, etc.",
+  "Planet": "A large celestial object that orbits a star.",
+  "Moon": "A natural object orbiting a planet.",
+  "Greenhouse effect": "When an atmosphere traps heat from the sun rather than letting it radiate out into space.",
+  "Atmosphere": "The envelope of gases surrounding the Earth or another planet.",
+  "Star cluster": "A group of stars that are near each other in space.",
+  "Constellation": "A region of sky in which stars appear to be grouped together.",
+  "Orbit": "The curved path of a celestial object or spacecraft around a star, planet, or moon.",
+  "Satellite": "An artificial body placed in orbit around the Earth, moon, or another planet.",
+  "Calendar": "A chart or series of pages showing the days, weeks, and months of a particular year, or giving particular seasonal information.",
+  "Light year": "The distance travelled by light in one year.",
+  "Year": "The time taken for a planet to orbit the Sun once, approximately 365 days.",
+  "Month": "A period of time between the same dates in successive calendar months.",
+  "Day": "The time taken for a planet to rotate once about its axis, approximately 24 hours.",
+  "Gravity": "The force that attracts a body towards the centre of the Earth, or towards any other physical body having mass.",
+  "Season": "Time of the year defined by certain temperatures and daylight hours, e.g. summer.",
+  "Axis": "Imaginary line about which an object rotates.",
+  "Axial tilt": "The angle between the axis of rotation of a planet and the orbital plane of the Solar System.",
+  "Rotation": "The circular movement of an object about its axis.",
+  "Maramataka": "The traditional Māori lunar calendar."
+},
+microbiology: {
+  "Microbiology": "The study of microorganisms.",
+  "Contagious": "Able to be spread from individual (e.g., person) to individual (person).",
+  "Disease": "When the structure and/or function of an organism is below normal (but the cause is not an injury).",
+  "Micro-organism": "A living thing that, on its own, is too small to be seen without a microscope e.g., bacteria.",
+  "Cell": "The smallest basic unit of living things.",
+  "Cell wall": "A structure around the outside of bacteria, fungi and plant cells that gives them shape and support.",
+  "Nucleus": "A structure within plant, animal and fungal cells that contains the genetic information of the cell.",
+  "Cytoplasm": "The fluid inside cells.",
+  "Flagellum": "A tail-like structure on bacterial cells that helps them swim through fluid mediums.",
+  "Genetic information": "Instructions in the DNA or RNA that tell a cell what to do and can be passed onto offspring.",
+  "Hyphae": "Fine branching root-like structures that fungi use to feed.",
+  "Spore": "A reproductive structure of bacteria and fungi.",
+  "Protein coat": "A layer that surrounds the genetic material of a virus, protects it and helps it to infect host cells.",
+  "Bacteria": "A type of microorganism that has cell walls but no nuclei.",
+  "Fungus": "A type of microorganism that has cell walls and nuclei. Includes yeasts, mould and mushrooms.",
+  "Virus": "A non-living agent that is able to replicate but only inside a living host cell.",
+  "MRSGREN": "A mnemonic used to recall the processes carried out by all living things.",
+  "Agar": "A seaweed jelly often used to grow colonies of microorganisms.",
+  "Colony": "A large group of organisms living and growing together. Colonies of microorganisms can be visible to the naked eye.",
+  "Incubate": "To put in a place with a controlled temperature.",
+  "Inoculate": "To intentionally put a microbe in a place or organism.",
+  "Pathogen": "A disease-causing organism.",
+  "Immunity/Lines of defence": "The systems the body has to protect it from infection by a pathogen.",
+  "B cells": "A type of white blood cell that produces antibodies.",
+  "Antibodies": "Unique, specific proteins that are produced by the immune system to help identify and kill non-self cells in the body.",
+  "Herd immunity": "When a large part of the population is immune to a disease, the pathogen can't be passed around and dies out, protecting even those who aren't immune.",
+  "Vaccination": "A tool that prepares the immune system to fight future infections by a specific pathogen so that the disease doesn't develop in that individual.",
+  "Microbiome": "All the microorganisms, symbiotic and pathogenic, living in and on an individual."
+},
+waves: {
+  "Wave": "A disturbance that travels through a medium (solid, liquid, or gas) from one place to another, transferring energy.",
+  "Medium": "The substance through which a wave travels (e.g., air for sound, water for water waves).",
+  "Mechanical wave": "A wave that needs a medium to travel through, like sound or water waves.",
+  "Transverse wave": "A wave where the particles of the medium move perpendicular to the direction of the wave (e.g., light waves).",
+  "Longitudinal wave": "A wave where the particles of the medium move in the same direction as the wave (e.g., sound waves).",
+  "Electromagnetic wave": "A wave that doesn't need a medium to travel through and can travel through a vacuum, like light or radio waves.",
+  "Amplitude": "The maximum displacement of particles in a wave, which determines the wave's energy or volume.",
+  "Wavelength": "The distance between two consecutive crests or troughs of a wave.",
+  "Frequency": "The number of waves that pass a point in one second, measured in Hertz (Hz).",
+  "Crest": "The highest point of a wave.",
+  "Trough": "The lowest point of a wave.",
+  "Wave speed": "The speed at which a wave travels through a medium, calculated as wave speed = frequency × wavelength.",
+  "Volume": "The loudness or softness of a sound, related to the amplitude of the sound wave.",
+  "Decibel": "A unit used to measure the intensity of sound. A higher decibel means a louder sound.",
+  "Pitch": "How high or low a sound is, determined by the frequency of the sound wave.",
+  "Outer ear": "The part of the ear that you can see; it collects sound waves.",
+  "Ear canal": "The passage that carries sound from the outer ear to the middle ear.",
+  "Middle ear": "The part of the ear that contains the ear drum and three small bones (hammer, anvil, stirrup) that amplify sound.",
+  "Ear drum": "A thin membrane that vibrates when sound waves hit it, transmitting sound to the middle ear.",
+  "Hammer": "One of the three small bones in the middle ear; it vibrates when the ear drum moves.",
+  "Anvil": "The middle bone in the middle ear that passes vibrations from the hammer to the stirrup.",
+  "Stirrup": "The third small bone in the middle ear; it passes sound vibrations to the inner ear.",
+  "Inner ear": "The part of the ear that contains the cochlea and auditory nerve, responsible for hearing.",
+  "Oval window": "A membrane that separates the middle ear from the inner ear and transfers sound vibrations.",
+  "Cochlear": "A spiral-shaped part of the inner ear that converts sound vibrations into electrical signals for the brain.",
+  "Electromagnetic spectrum": "The range of all types of electromagnetic radiation, from radio waves to gamma rays.",
+  "Intensity": "The amount of energy a wave carries, which affects how loud or bright it is.",
+  "Opaque": "A material that does not allow light to pass through.",
+  "Translucent": "A material that allows some light to pass through but not clear images.",
+  "Transparent": "A material that allows light to pass through so that objects behind it can be seen clearly.",
+  "Reflection": "When a wave bounces off a surface instead of passing through it.",
+  "Convex": "A shape that curves outward, like the outside of a sphere.",
+  "Concave": "A shape that curves inward, like the inside of a bowl.",
+  "Refraction": "The bending of light or sound waves when they pass from one medium to another.",
+  "Total internal reflection": "When light reflects entirely inside a medium, usually occurring when light hits the surface at a steep angle.",
+  "Cornea": "The clear, curved outer surface of the eye that helps focus light.",
+  "Pupil": "The black circular opening in the center of the iris that controls how much light enters the eye.",
+  "Lens": "A transparent structure in the eye that focuses light onto the retina.",
+  "Retina": "The light-sensitive layer at the back of the eye that converts light into electrical signals for the brain.",
+  "Primary colour": "The basic colors of light that cannot be created by mixing other colors (red, green, blue).",
+  "Secondary colour": "Colors created by mixing two primary colors (yellow, cyan, magenta)."
+},
+biomes: {
+  "Biome": "A large community of plants and animals that share similar characteristics and are adapted to the environment in that area, e.g., a rainforest biome.",
+  "Canopy layer": "The upper layer of a forest formed by the tops of trees and their leaves, which create a roof over the forest.",
+  "Emergent layer": "The top layer of a forest where the tallest trees rise above the canopy, reaching the sunlight.",
+  "Understory": "The layer of smaller trees, shrubs, and ferns growing beneath the canopy layer in a forest.",
+  "Forest floor": "The bottom layer of a forest, where decomposing plants, fallen leaves, and small plants grow.",
+  "Classification": "A system of sorting living things into groups based on their similarities and differences.",
+  "Organism": "Any living thing, from a tiny microorganism to a large animal.",
+  "Species": "A group of organisms that can interbreed to produce fertile offspring.",
+  "Offspring": "The young produced by reproduction.",
+  "Fertile": "Able to produce healthy offspring.",
+  "Adaptation": "A feature or behavior of an organism that helps it survive and reproduce in its environment.",
+  "Habitat": "The place or environment where an organism lives.",
+  "Biotic": "The living factors in an ecosystem, such as plants, animals, and microorganisms, and how they interact.",
+  "Abiotic": "The non-living components of an environment, like water, soil, and climate, that influence living organisms.",
+  "Niche": "The specific role or job an organism plays in its ecosystem, including its habitat, diet, and interactions.",
+  "Producer": "Organisms, like plants, that produce their own food from sunlight through photosynthesis.",
+  "Consumer": "Organisms that eat other organisms to get energy and nutrients.",
+  "Competition": "When two organisms or species fight for the same resource, like food or space.",
+  "Herbivore": "An animal that eats only plants.",
+  "Carnivore": "An animal that eats only other animals.",
+  "Omnivore": "An animal that eats both plants and animals.",
+  "Decomposer": "Organisms, like bacteria and fungi, that break down dead plants and animals, recycling nutrients back into the ecosystem.",
+  "Parasite": "An organism that lives off another organism (host), causing it harm by stealing nutrients.",
+  "Predator": "An animal that hunts, kills, and eats other animals.",
+  "Prey": "An animal that is hunted and eaten by a predator.",
+  "Population": "A group of individuals of the same species living in the same area at the same time.",
+  "Community": "All the different species of organisms living together in a particular area or ecosystem.",
+  "Ecosystem": "A community of living organisms and their physical environment, interacting as a system.",
+  "Photosynthesis": "The process by which plants use sunlight, water, and carbon dioxide to make their own food (glucose) and release oxygen.",
+  "Chlorophyll": "The green pigment in plants that captures sunlight for photosynthesis.",
+  "Stomata": "Small openings on the surface of leaves that allow gases like carbon dioxide, oxygen, and water vapor to pass in and out.",
+  "Food chain": "A series of steps showing how energy and nutrients flow from one organism to another, as they are eaten.",
+  "Food web": "A complex network of interconnected food chains in an ecosystem, showing how energy and nutrients are passed among organisms.",
+  "Biodiversity": "The variety of different species of plants, animals, and microorganisms in an ecosystem.",
+  "Native species": "Species that naturally occur in a particular area and have evolved there over time.",
+  "Introduced species": "Species that are brought to a new location by humans, either intentionally or accidentally.",
+  "Invasive species": "Introduced species that spread rapidly and negatively impact native species and ecosystems.",
+  "Line transect": "A tool used by scientists to study an ecosystem by measuring and recording the types of organisms along a straight line across the area."
+}
+    };
+
+let currentQuiz = "climate";
+let usedTerms = new Set();
+let correctAnswers = 0;
+let totalQuestions = 0;
+
+function startQuiz(topic) {
+    currentQuiz = topic;
+    usedTerms.clear();
+    correctAnswers = 0;
+    totalQuestions = 0;
+    document.getElementById("start-screen").classList.add("hidden");
+    document.getElementById("quiz-screen").classList.remove("hidden");
+    loadQuestion();
+}
+
+function loadQuestion() {
+    const terms = Object.keys(data[currentQuiz]);
+    let availableTerms = terms.filter(term => !usedTerms.has(term));
+
+    if (availableTerms.length === 0) {
+        let percentage = (correctAnswers / totalQuestions) * 100;
+        document.getElementById("options").innerHTML = `Quiz completed! Your score: ${percentage.toFixed(2)}%<br>Restarting...`;
+        document.getElementById("feedback").textContent = "All questions asked!";
+        setTimeout(() => {
+            usedTerms.clear();
+            correctAnswers = 0;
+            totalQuestions = 0;
+            loadQuestion();
+        }, 3000);
+        return;
+    }
+
+    const correctTerm = availableTerms[Math.floor(Math.random() * availableTerms.length)];
+    const correctDefinition = data[currentQuiz][correctTerm];
+    usedTerms.add(correctTerm);
+    totalQuestions++;
+
+    const shuffledTerms = terms.filter(t => t !== correctTerm)
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 4);
+    shuffledTerms.push(correctTerm);
+    shuffledTerms.sort(() => 0.5 - Math.random());
+
+    document.getElementById("definition").textContent = correctDefinition;
+    const optionsContainer = document.getElementById("options");
+    optionsContainer.innerHTML = "";
+    document.getElementById("feedback").textContent = "";
+
+    shuffledTerms.forEach(term => {
+        const btn = document.createElement("button");
+        btn.textContent = term;
+        btn.className = "option";
+        btn.onclick = () => {
+            if (term === correctTerm) {
+                btn.classList.add("correct");
+                document.getElementById("feedback").textContent = "✅ Correct!";
+                correctAnswers++;
+            } else {
+                btn.classList.add("wrong");
+                document.getElementById("feedback").textContent = `The correct answer was: ${correctTerm}`;
+            }
+            setTimeout(loadQuestion, 2000);
+        };
+        optionsContainer.appendChild(btn);
+    });
+}
+</script>
+
+</body>
+</html>
