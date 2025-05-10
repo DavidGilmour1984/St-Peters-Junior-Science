@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Genetics: Select the True Statement</title>
+  <style>
+    body {
+      font-family: Helvetica, sans-serif;
+      padding: 2em;
+      background-color: #f5f5f5;
+      text-align: center;
+    }
+
+    .card {
+      background: white;
+      padding: 2em;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      max-width: 700px;
+      margin: auto;
+    }
+
+    .sentence {
+      background: #e0e0e0;
+      border-radius: 10px;
+      padding: 12px;
+      margin: 10px auto;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s;
+      font-size: 1.1em;
+    }
+
+    .sentence:hover {
+      background: #d0d0d0;
+    }
+
+    .sentence.correct-true {
+      background-color: #a0e6a0 !important;
+      color: green;
+      font-weight: bold;
+    }
+
+    #progress {
+      margin-top: 20px;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    .instruction-true {
+      color: green;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Genetics: True or False</h2>
+    <p id="instructions" class="instruction-true">Select the true statement:</p>
+    <div id="quizArea"></div>
+    <div id="progress">Score: 0/0</div>
+  </div>
+
+  <script>
+    let truePool = [
+      "DNA has a double helix structure.",
+      "The base adenine (A) pairs with thymine (T), and cytosine (C) pairs with guanine (G).",
+      "A gene is a section of DNA that codes for a trait.",
+      "Alleles are different versions of the same gene.",
+      "Chromosomes are made of DNA and contain many genes.",
+      "Genotype refers to the genetic makeup of an individual.",
+      "Phenotype is the observable expression of the genotype.",
+      "A dominant allele will mask the presence of a recessive allele.",
+      "A recessive allele must be inherited from both parents to be expressed.",
+      "Homozygous dominant means having two dominant alleles.",
+      "Heterozygous means having one dominant and one recessive allele.",
+      "Punnett squares are used to predict inheritance outcomes.",
+      "Punnett squares help calculate genotype and phenotype ratios.",
+      "Genetic variation helps populations adapt to environmental changes.",
+      "Greater diversity in a population increases survival chances.",
+      "Structural adaptations involve physical features that aid survival.",
+      "Behavioural adaptations involve actions that help survival.",
+      "Physiological adaptations involve internal body processes.",
+      "Mutations are changes to the DNA base sequence.",
+      "Mutagens such as radiation and chemicals can cause mutations."
+    ];
+
+    let falsePool = [
+      "DNA is a flat, straight molecule with no shape.",
+      "All DNA bases pair randomly with one another.",
+      "A gene and a chromosome are the same thing.",
+      "Alleles are always identical within a gene.",
+      "Genotype and phenotype mean the same thing.",
+      "A recessive allele is stronger than a dominant one.",
+      "You can only inherit traits from one parent.",
+      "Heterozygous means having no alleles at all.",
+      "Punnett squares show the shape of chromosomes.",
+      "Punnett squares can predict the exact number of offspring.",
+      "Genetic diversity lowers the chances of survival in the wild.",
+      "Structural, behavioural, and physiological adaptations are the same thing.",
+      "All mutations are harmful and reduce survival.",
+      "Adaptations happen during an individual’s lifetime.",
+      "Mutations delete the entire gene every time.",
+      "Adaptations are not inherited.",
+      "Phenotype controls the sequence of DNA bases.",
+      "Dominant traits are always more common than recessive traits.",
+      "Adaptations are caused only by behaviour.",
+      "Every mutation results in a visible phenotype change."
+    ];
+
+    let currentQuestion = 0;
+    let score = 0;
+    let correctSentence = "";
+
+    function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    }
+
+    function renderQuestion() {
+      const quizArea = document.getElementById("quizArea");
+      quizArea.innerHTML = "";
+
+      // Stop if we've run out of pairs
+      if (truePool.length === 0 || falsePool.length === 0) {
+        quizArea.innerHTML = `<h3>Quiz complete!</h3><p>Your final score: ${score}/${currentQuestion}</p>`;
+        document.getElementById("instructions").style.display = "none";
+        return;
+      }
+
+      const trueIndex = Math.floor(Math.random() * truePool.length);
+      const falseIndex = Math.floor(Math.random() * falsePool.length);
+
+      const trueChoice = truePool.splice(trueIndex, 1)[0];
+      const falseChoice = falsePool.splice(falseIndex, 1)[0];
+      const combined = shuffle([trueChoice, falseChoice]);
+
+      correctSentence = trueChoice;
+
+      combined.forEach(sentence => {
+        const div = document.createElement("div");
+        div.classList.add("sentence");
+        div.textContent = sentence;
+        div.onclick = function () {
+          document.querySelectorAll(".sentence").forEach(el => {
+            el.onclick = null;
+            if (el.textContent === correctSentence) {
+              el.classList.add("correct-true");
+            }
+          });
+
+          if (sentence === correctSentence) {
+            score++;
+          }
+
+          updateProgress();
+
+          setTimeout(() => {
+            nextQuestion();
+          }, 1200);
+        };
+        quizArea.appendChild(div);
+      });
+    }
+
+    function nextQuestion() {
+      currentQuestion++;
+      renderQuestion();
+    }
+
+    function updateProgress() {
+      document.getElementById("progress").textContent = `Score: ${score}/${currentQuestion}`;
+    }
+
+    renderQuestion();
+  </script>
+</body>
+</html>
